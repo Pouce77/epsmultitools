@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes classes — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h1 class="fw-bold mb-0"><i class="bi bi-people-fill me-2 text-primary"></i>Mes classes</h1>
+    <a href="{{ path('app_classe_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nouvelle classe
+    </a>
+</div>
+
+{% if classes is empty %}
+<div class="card border-0 shadow-sm text-center py-5">
+    <div class="card-body">
+        <div class="display-4 mb-3">🏫</div>
+        <h4 class="fw-bold">Aucune classe</h4>
+        <p class="text-muted">Créez votre première classe pour commencer.</p>
+        <a href="{{ path('app_classe_new') }}" class="btn btn-primary mt-2">
+            <i class="bi bi-plus-lg me-2"></i>Créer une classe
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm rounded">
+        <thead class="table-light">
+            <tr>
+                <th>Classe</th>
+                <th>Niveau</th>
+                <th>Année scolaire</th>
+                <th class="text-center">Élèves</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for classe in classes %}
+            <tr>
+                <td class="fw-semibold">{{ classe.nom }}</td>
+                <td>
+                    {% if classe.niveau %}
+                        <span class="badge" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">{{ classe.niveau }}</span>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted">{{ classe.anneeScolaire }}</td>
+                <td class="text-center">
+                    <span class="badge bg-secondary">{{ classe.effectif }}</span>
+                </td>
+                <td class="text-end">
+                    <a href="{{ path('app_classe_show', {id: classe.id}) }}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{{ path('app_classe_edit', {id: classe.id}) }}" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#deleteModal{{ classe.id }}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Delete modals #}
+{% for classe in classes %}
+<div class="modal fade" id="deleteModal{{ classe.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Supprimer la classe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la classe <strong>{{ classe.nom }}</strong> ?</p>
+                <p class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>Cette action supprimera également les {{ classe.effectif }} élève(s) associé(s).</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('app_classe_delete', {id: classe.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-classe-' ~ classe.id) }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

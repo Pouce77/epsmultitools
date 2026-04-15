@@ -1,0 +1,41 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      - name: Deploy Over SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            echo "▶ Pull..."
+            git pull origin master
+
+            echo "▶ Composer..."
+            composer2 install --no-dev --optimize-autoloader --no-interaction
+
+            echo "▶ Migrations..."
+            APP_ENV=prod php bin/console doctrine:migrations:migrate --no-interaction
+
+            echo "▶ Assets..."
+            rm -rf public/assets
+            APP_ENV=prod php bin/console asset-map:compile
+
+            echo "▶ Cache..."
+            APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear
+
+            echo "✅ Déploiement terminé."

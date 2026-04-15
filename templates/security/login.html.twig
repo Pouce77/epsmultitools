@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <span class="display-5">🏃</span>
+                    <h2 class="fw-bold mt-2">Connexion</h2>
+                    <p class="text-muted">Accédez à votre espace enseignant</p>
+                </div>
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{{ path('app_login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Adresse e-mail</label>
+                        <input type="email" id="username" name="_username"
+                               class="form-control form-control-lg"
+                               value="{{ last_username }}"
+                               autocomplete="email" autofocus required
+                               placeholder="email@etablissement.fr">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold">Mot de passe</label>
+                        <input type="password" id="password" name="_password"
+                               class="form-control form-control-lg"
+                               autocomplete="current-password" required
+                               placeholder="••••••••">
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check mb-0">
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="_remember_me">
+                            <label class="form-check-label text-muted" for="remember_me">Se souvenir de moi</label>
+                        </div>
+                        <a href="{{ path('app_forgot_password') }}" class="small text-muted">
+                            Mot de passe oublié ?
+                        </a>
+                    </div>
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                    </button>
+                </form>
+
+                <hr>
+                <p class="text-center text-muted mb-0">
+                    Pas encore de compte ?
+                    <a href="{{ path('app_register') }}" class="fw-semibold">S'inscrire gratuitement</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

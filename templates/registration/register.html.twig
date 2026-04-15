@@ -1,0 +1,227 @@
+{% extends 'base.html.twig' %}
+{% block title %}Inscription — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<style>
+.agree-error ul { list-style:none; margin:.25rem 0 0; padding:0; }
+.agree-error li, .agree-error div { color:#dc3545; font-size:.85rem; font-weight:500; }
+</style>
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <img src="{{ asset('images/logo.png') }}" alt="EPS Multi-Tools" height="72" class="mb-2">
+                    <h2 class="fw-bold mt-2">Créer mon compte</h2>
+                    <p class="text-muted">Inscription gratuite pour les enseignants d'EPS</p>
+                </div>
+
+                {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">{{ form_label(registrationForm.prenom) }}</label>
+                        {{ form_widget(registrationForm.prenom) }}
+                        {{ form_errors(registrationForm.prenom) }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">{{ form_label(registrationForm.nom) }}</label>
+                        {{ form_widget(registrationForm.nom) }}
+                        {{ form_errors(registrationForm.nom) }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">{{ form_label(registrationForm.email) }}</label>
+                        {{ form_widget(registrationForm.email) }}
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">{{ form_label(registrationForm.etablissement) }}</label>
+                        {{ form_widget(registrationForm.etablissement) }}
+                        {{ form_errors(registrationForm.etablissement) }}
+                    </div>
+
+                    {# ── Mot de passe ───────────────────────────────── #}
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="{{ registrationForm.plainPassword.first.vars.id }}">
+                            Mot de passe
+                        </label>
+                        <div class="input-group">
+                            {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control', 'id': 'reg-password'}}) }}
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-pwd" tabindex="-1"
+                                    title="Afficher / masquer">
+                                <i class="bi bi-eye" id="toggle-pwd-icon"></i>
+                            </button>
+                        </div>
+                        {{ form_errors(registrationForm.plainPassword.first) }}
+
+                        {# Indicateur de force #}
+                        <div class="mt-2">
+                            <div class="d-flex gap-1 mb-1" id="pwd-strength-bars">
+                                <div class="flex-fill rounded-pill" style="height:5px;background:#e9ecef;" id="bar-1"></div>
+                                <div class="flex-fill rounded-pill" style="height:5px;background:#e9ecef;" id="bar-2"></div>
+                                <div class="flex-fill rounded-pill" style="height:5px;background:#e9ecef;" id="bar-3"></div>
+                                <div class="flex-fill rounded-pill" style="height:5px;background:#e9ecef;" id="bar-4"></div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2" id="pwd-rules">
+                                <span class="badge rounded-pill text-bg-secondary" id="rule-len">12 caractères min.</span>
+                                <span class="badge rounded-pill text-bg-secondary" id="rule-upper">Majuscule</span>
+                                <span class="badge rounded-pill text-bg-secondary" id="rule-lower">Minuscule</span>
+                                <span class="badge rounded-pill text-bg-secondary" id="rule-digit">Chiffre</span>
+                                <span class="badge rounded-pill text-bg-secondary" id="rule-special">Caractère spécial</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# ── Confirmation mot de passe ──────────────────── #}
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="{{ registrationForm.plainPassword.second.vars.id }}">
+                            Confirmer le mot de passe
+                        </label>
+                        <div class="input-group">
+                            {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control', 'id': 'reg-password-confirm'}}) }}
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-pwd2" tabindex="-1"
+                                    title="Afficher / masquer">
+                                <i class="bi bi-eye" id="toggle-pwd2-icon"></i>
+                            </button>
+                        </div>
+                        <div id="pwd-match-msg" class="form-text" style="display:none;"></div>
+                        {{ form_errors(registrationForm.plainPassword.second) }}
+                        {{ form_errors(registrationForm.plainPassword) }}
+                    </div>
+
+                    {# ── Politique de confidentialité ───────────────── #}
+                    <div class="col-12">
+                        <div class="p-3 rounded-2" id="agree-wrapper" style="background:#f8fffe;border:1px solid #d0f0eb;transition:border-color .2s,background .2s;">
+                            <div class="form-check">
+                                {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input', 'id': 'reg-agree'}}) }}
+                                <label class="form-check-label small" for="reg-agree">
+                                    J'ai lu et j'accepte la
+                                    <a href="{{ path('app_confidentialite') }}" target="_blank" class="fw-semibold">
+                                        politique de confidentialité
+                                    </a>
+                                    et les
+                                    <a href="{{ path('app_mentions_legales') }}" target="_blank" class="fw-semibold">
+                                        mentions légales
+                                    </a>
+                                    d'EPS Multi-Tools.
+                                </label>
+                                <div class="agree-error">{{ form_errors(registrationForm.agreeTerms) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold mt-4">
+                    <i class="bi bi-person-check-fill me-2"></i>Créer mon compte
+                </button>
+
+                {{ form_end(registrationForm) }}
+
+                <hr>
+                <p class="text-center text-muted mb-0">
+                    Déjà un compte ?
+                    <a href="{{ path('app_login') }}" class="fw-semibold">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ── Règles de mot de passe
+    const rules = {
+        len:     { re: /.{12,}/,   id: 'rule-len'     },
+        upper:   { re: /[A-Z]/,    id: 'rule-upper'   },
+        lower:   { re: /[a-z]/,    id: 'rule-lower'   },
+        digit:   { re: /[0-9]/,    id: 'rule-digit'   },
+        special: { re: /[\W_]/,    id: 'rule-special' },
+    }
+
+    const bars   = [1,2,3,4].map(i => document.getElementById('bar-' + i))
+    const colors = ['#e84020','#f5b800','#198754','#0d6635']
+
+    function checkPassword(val) {
+        let score = 0
+        for (const [, r] of Object.entries(rules)) {
+            const ok = r.re.test(val)
+            const el = document.getElementById(r.id)
+            if (!el) continue
+            el.className          = 'badge rounded-pill'
+            el.style.backgroundColor = ok ? '#198754' : '#6c757d'
+            el.style.color           = '#fff'
+            if (ok) score++
+        }
+        bars.forEach((b, i) => {
+            b.style.background = i < score ? colors[Math.min(score - 1, 3)] : '#e9ecef'
+        })
+    }
+
+    // Symfony peut générer son propre id sur les champs RepeatedType ;
+    // on utilise le bouton toggle comme ancre DOM pour trouver l'input sibling.
+    const pwdInput  = document.getElementById('reg-password')
+                   || document.getElementById('toggle-pwd')?.closest('.input-group')?.querySelector('input')
+    const pwdInput2 = document.getElementById('reg-password-confirm')
+                   || document.getElementById('toggle-pwd2')?.closest('.input-group')?.querySelector('input')
+    const matchMsg  = document.getElementById('pwd-match-msg')
+
+    if (pwdInput) {
+        pwdInput.addEventListener('input', () => checkPassword(pwdInput.value))
+    }
+
+    function checkMatch() {
+        if (!pwdInput2 || !pwdInput2.value) { if (matchMsg) matchMsg.style.display = 'none'; return }
+        const ok = pwdInput.value === pwdInput2.value
+        matchMsg.style.display = ''
+        matchMsg.textContent   = ok ? '✓ Les mots de passe correspondent.' : '✗ Les mots de passe ne correspondent pas.'
+        matchMsg.style.color   = ok ? '#198754' : '#e84020'
+    }
+
+    if (pwdInput2) pwdInput2.addEventListener('input', checkMatch)
+    if (pwdInput)  pwdInput.addEventListener('input', checkMatch)
+
+    // ── Toggle visibilité
+    // Symfony peut ignorer l'id passé dans attr et générer le sien ;
+    // on cherche d'abord par ID, sinon on prend l'<input> sibling dans le .input-group.
+    function makeToggle(btnId, iconId, inputId) {
+        const btn  = document.getElementById(btnId)
+        const icon = document.getElementById(iconId)
+        if (!btn) return
+        const input = document.getElementById(inputId)
+                   || btn.closest('.input-group')?.querySelector('input')
+        if (!input) return
+        btn.addEventListener('click', function (e) {
+            e.preventDefault()
+            e.stopPropagation()
+            const show = input.getAttribute('type') === 'password'
+            input.setAttribute('type', show ? 'text' : 'password')
+            if (icon) icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye'
+            input.focus()
+        })
+    }
+    makeToggle('toggle-pwd',  'toggle-pwd-icon',  'reg-password')
+    makeToggle('toggle-pwd2', 'toggle-pwd2-icon', 'reg-password-confirm')
+
+    // ── Avertissement orange si politique de confidentialité non cochée
+    const agreeBox     = document.getElementById('reg-agree')
+    const agreeWrapper = document.getElementById('agree-wrapper')
+
+    function setAgreeStyle(ok) {
+        if (!agreeWrapper) return
+        agreeWrapper.style.borderColor = ok ? '#d0f0eb'  : '#fd7e14'
+        agreeWrapper.style.background  = ok ? '#f8fffe'  : '#fff8f0'
+    }
+
+    if (agreeBox) {
+        agreeBox.addEventListener('change', () => setAgreeStyle(agreeBox.checked))
+    }
+
+    const submitBtn = document.querySelector('button[type="submit"]')
+    if (submitBtn && agreeBox) {
+        submitBtn.addEventListener('click', () => {
+            if (!agreeBox.checked) setAgreeStyle(false)
+        })
+    }
+})()
+</script>
+{% endblock %}

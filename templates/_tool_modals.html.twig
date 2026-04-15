@@ -1,0 +1,518 @@
+{# ── Modals aperçu des outils ────────────────────────────────────────── #}
+{# Inclure avec : {% include '_tool_modals.html.twig' with {hide_cta: true} %} #}
+{# hide_cta=true masque le bouton "Essayer gratuitement" (dashboard = déjà connecté) #}
+
+{# Modal : Gestion des classes #}
+<div class="modal fade" id="modal-classes" tabindex="-1" aria-labelledby="modal-classes-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-classes-label"><span class="me-2">👥</span>Gestion des classes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-4">Créez vos classes, renseignez le niveau et ajoutez vos élèves un par un ou via un copier-coller de liste.</p>
+        <div class="rounded-3 p-3 mb-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+          <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+            <div class="fw-bold fs-5">3ème A</div>
+            <span class="badge" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">3ème</span>
+            <span class="ms-auto text-muted small">28 élèves</span>
+          </div>
+          <div class="row g-2">
+            {% for name in ['Abdelkader L.','Camille M.','Théo R.','Inès B.','Maxime D.','Léa F.'] %}
+            <div class="col-6 col-md-4">
+              <div class="d-flex align-items-center gap-2 p-2 rounded-2" style="background:#fff;border:1px solid #e4e4e4;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                     style="width:30px;height:30px;font-size:.75rem;background:#0f9e8e;flex-shrink:0;">
+                  {{ name|slice(0,1) }}
+                </div>
+                <span class="small">{{ name }}</span>
+              </div>
+            </div>
+            {% endfor %}
+            <div class="col-6 col-md-4">
+              <div class="d-flex align-items-center justify-content-center gap-1 p-2 rounded-2 text-muted small"
+                   style="border:1px dashed #ccc;height:100%;">
+                <i class="bi bi-three-dots"></i> 22 autres
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="badge bg-light text-dark border"><i class="bi bi-plus me-1"></i>Ajouter un élève</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-upload me-1"></i>Import en masse</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-pencil me-1"></i>Modifier la classe</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal : Compteur de vitesse #}
+<div class="modal fade" id="modal-vitesse" tabindex="-1" aria-labelledby="modal-vitesse-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-vitesse-label"><span class="me-2">⏱️</span>Compteur de vitesse</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-4">Sélectionnez un élève, lancez le chrono au départ, arrêtez-le à l'arrivée. La vitesse est calculée automatiquement.</p>
+        <div class="rounded-3 p-4 mb-3 text-center" style="background:#f8fffe;border:1px solid #d0f0eb;">
+          <div class="mb-3">
+            <span class="badge rounded-pill px-3 py-2" style="background:#0f9e8e;font-size:.95rem;">Camille M.</span>
+          </div>
+          <div class="display-3 fw-bold mb-1" style="color:#1a2b3a;font-variant-numeric:tabular-nums;">08.42</div>
+          <div class="text-muted small mb-4">secondes · distance : 50 m</div>
+          <div class="row g-3 justify-content-center">
+            <div class="col-auto">
+              <div class="p-3 rounded-3 text-center" style="background:#e6f7f5;min-width:110px;">
+                <div class="fs-4 fw-bold" style="color:#0f9e8e;">5.94</div>
+                <div class="small text-muted">m/s</div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <div class="p-3 rounded-3 text-center" style="background:#fff8e1;min-width:110px;">
+                <div class="fs-4 fw-bold" style="color:#c8900a;">21.4</div>
+                <div class="small text-muted">km/h</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="badge bg-light text-dark border"><i class="bi bi-people me-1"></i>Tous les élèves</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-table me-1"></i>Tableau des résultats</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-floppy me-1"></i>Sauvegarde</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal : Tableau de scores #}
+<div class="modal fade" id="modal-scores" tabindex="-1" aria-labelledby="modal-scores-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-scores-label"><span class="me-2">🏆</span>Tableau de scores</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-4">Affichez et modifiez les scores en temps réel. Idéal sur un grand écran visible de toute la classe.</p>
+        <div class="rounded-3 p-3 mb-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+          <div class="row g-3">
+            {% for team in [['Équipe Rouge','#e84020','14'],['Équipe Bleue','#1a4fd6','11'],['Équipe Verte','#1a9c3a','9'],['Équipe Jaune','#c8900a','7']] %}
+            <div class="col-6">
+              <div class="p-3 rounded-3 text-center text-white position-relative" style="background:{{ team[1] }};">
+                <div class="fw-bold small mb-1">{{ team[0] }}</div>
+                <div style="font-size:2.5rem;font-weight:800;line-height:1;">{{ team[2] }}</div>
+                <div class="d-flex justify-content-center gap-2 mt-2">
+                  <button class="btn btn-sm btn-light opacity-75 px-2 py-0" disabled>−</button>
+                  <button class="btn btn-sm btn-light opacity-75 px-2 py-0" disabled>+</button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="badge bg-light text-dark border"><i class="bi bi-plus-square me-1"></i>Ajouter une équipe</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-floppy me-1"></i>Sauvegarde</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal : Compteur d'actions #}
+<div class="modal fade" id="modal-actions" tabindex="-1" aria-labelledby="modal-actions-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-actions-label"><span class="me-2">📊</span>Compteur d'actions</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-4">Observez et comptez les actions techniques de chaque élève en temps réel pendant la séance.</p>
+        <div class="rounded-3 p-3 mb-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+          <div class="fw-semibold mb-3 small text-muted text-uppercase">Séance handball · 3ème A</div>
+          <div class="table-responsive">
+            <table class="table table-sm mb-0" style="font-size:.875rem;">
+              <thead>
+                <tr>
+                  <th class="border-0">Élève</th>
+                  <th class="border-0 text-center">Passes</th>
+                  <th class="border-0 text-center">Tirs</th>
+                  <th class="border-0 text-center">Buts</th>
+                  <th class="border-0 text-center">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in [['Abdelkader L.','8','4','2','14'],['Camille M.','11','3','1','15'],['Théo R.','5','6','3','14'],['Inès B.','9','2','0','11']] %}
+                <tr>
+                  <td>{{ row[0] }}</td>
+                  <td class="text-center"><span class="badge bg-primary">{{ row[1] }}</span></td>
+                  <td class="text-center"><span class="badge bg-warning text-dark">{{ row[2] }}</span></td>
+                  <td class="text-center"><span class="badge bg-success">{{ row[3] }}</span></td>
+                  <td class="text-center fw-bold">{{ row[4] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="badge bg-light text-dark border"><i class="bi bi-pencil-square me-1"></i>Actions personnalisables</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-floppy me-1"></i>Sauvegarde</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal : Organisation de tournoi #}
+<div class="modal fade" id="modal-tournoi" tabindex="-1" aria-labelledby="modal-tournoi-label" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-tournoi-label"><span class="me-2">🎯</span>Organisation de tournoi</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-3">Choisissez le format, générez le tableau en un clic, et désignez les vainqueurs match par match.</p>
+
+        <ul class="nav nav-pills mb-3 gap-2" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active px-3 py-1"
+                    data-bs-toggle="pill" data-bs-target="#tab-poules" type="button" role="tab"
+                    style="--bs-nav-pills-link-active-bg:#0f9e8e;">
+              <i class="bi bi-grid me-1"></i>Poules (round-robin)
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 py-1"
+                    data-bs-toggle="pill" data-bs-target="#tab-elim" type="button" role="tab"
+                    style="--bs-nav-pills-link-active-bg:#0f9e8e;">
+              <i class="bi bi-diagram-3 me-1"></i>Élimination directe
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="tab-poules" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="rounded-3 p-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+                  <div class="fw-bold small mb-2" style="color:#0f9e8e;">
+                    <i class="bi bi-circle-fill me-1" style="font-size:.5rem;vertical-align:middle;"></i>POULE A
+                  </div>
+                  <table class="table table-sm mb-2" style="font-size:.8rem;">
+                    <thead><tr style="background:#e6f7f5;">
+                      <th class="border-0 py-1">Joueur</th>
+                      <th class="border-0 py-1 text-center">J</th><th class="border-0 py-1 text-center">G</th>
+                      <th class="border-0 py-1 text-center">N</th><th class="border-0 py-1 text-center">P</th>
+                      <th class="border-0 py-1 text-center fw-bold">Pts</th>
+                    </tr></thead>
+                    <tbody>
+                      {% for row in [
+                        ['Abdelkader L.','3','2','1','0','7','🥇'],
+                        ['Camille M.',   '3','2','0','1','6','🥈'],
+                        ['Théo R.',      '3','1','1','1','4','🥉'],
+                        ['Inès B.',      '3','0','0','3','0',''],
+                      ] %}
+                      <tr>
+                        <td class="py-1">{{ row[6] ? row[6]~' ' : '' }}{{ row[0] }}</td>
+                        <td class="text-center py-1">{{ row[1] }}</td><td class="text-center py-1">{{ row[2] }}</td>
+                        <td class="text-center py-1">{{ row[3] }}</td><td class="text-center py-1">{{ row[4] }}</td>
+                        <td class="text-center py-1 fw-bold" style="color:#0a7468;">{{ row[5] }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  <div class="small text-muted fw-semibold mb-1">Matchs</div>
+                  <div class="d-flex flex-column gap-1">
+                    {% for m in [['Abdelkader L.','Camille M.','11','9'],['Théo R.','Inès B.','7','3'],['Abdelkader L.','Théo R.','6','6'],['Camille M.','Inès B.','11','2'],['Abdelkader L.','Inès B.','11','1'],['Camille M.','Théo R.','8','11']] %}
+                    <div class="d-flex align-items-center gap-1" style="font-size:.78rem;">
+                      <span class="flex-fill text-end px-1 rounded-1 {{ m[2]|number_format > m[3]|number_format ? 'fw-bold' : 'text-muted' }}" style="{{ m[2]|number_format > m[3]|number_format ? 'background:#e6f7f5;color:#0a7468;' : '' }}">{{ m[0] }}</span>
+                      <span style="min-width:50px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600;">{{ m[2] }} – {{ m[3] }}</span>
+                      <span class="flex-fill px-1 rounded-1 {{ m[3]|number_format > m[2]|number_format ? 'fw-bold' : 'text-muted' }}" style="{{ m[3]|number_format > m[2]|number_format ? 'background:#e6f7f5;color:#0a7468;' : '' }}">{{ m[1] }}</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="rounded-3 p-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+                  <div class="fw-bold small mb-2" style="color:#0f9e8e;">
+                    <i class="bi bi-circle-fill me-1" style="font-size:.5rem;vertical-align:middle;"></i>POULE B
+                  </div>
+                  <table class="table table-sm mb-2" style="font-size:.8rem;">
+                    <thead><tr style="background:#e6f7f5;">
+                      <th class="border-0 py-1">Joueur</th>
+                      <th class="border-0 py-1 text-center">J</th><th class="border-0 py-1 text-center">G</th>
+                      <th class="border-0 py-1 text-center">N</th><th class="border-0 py-1 text-center">P</th>
+                      <th class="border-0 py-1 text-center fw-bold">Pts</th>
+                    </tr></thead>
+                    <tbody>
+                      {% for row in [
+                        ['Maxime D.','3','3','0','0','9','🥇'],
+                        ['Léa F.',   '3','1','1','1','4','🥈'],
+                        ['Hugo P.',  '3','1','0','2','3','🥉'],
+                        ['Sara T.',  '3','0','1','2','1',''],
+                      ] %}
+                      <tr>
+                        <td class="py-1">{{ row[6] ? row[6]~' ' : '' }}{{ row[0] }}</td>
+                        <td class="text-center py-1">{{ row[1] }}</td><td class="text-center py-1">{{ row[2] }}</td>
+                        <td class="text-center py-1">{{ row[3] }}</td><td class="text-center py-1">{{ row[4] }}</td>
+                        <td class="text-center py-1 fw-bold" style="color:#0a7468;">{{ row[5] }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  <div class="small text-muted fw-semibold mb-1">Matchs</div>
+                  <div class="d-flex flex-column gap-1">
+                    {% for m in [['Maxime D.','Léa F.','11','5'],['Hugo P.','Sara T.','8','11'],['Maxime D.','Hugo P.','11','4'],['Léa F.','Sara T.','7','7'],['Maxime D.','Sara T.','11','3'],['Léa F.','Hugo P.','9','6']] %}
+                    <div class="d-flex align-items-center gap-1" style="font-size:.78rem;">
+                      <span class="flex-fill text-end px-1 rounded-1 {{ m[2]|number_format > m[3]|number_format ? 'fw-bold' : 'text-muted' }}" style="{{ m[2]|number_format > m[3]|number_format ? 'background:#e6f7f5;color:#0a7468;' : '' }}">{{ m[0] }}</span>
+                      <span style="min-width:50px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600;">{{ m[2] }} – {{ m[3] }}</span>
+                      <span class="flex-fill px-1 rounded-1 {{ m[3]|number_format > m[2]|number_format ? 'fw-bold' : 'text-muted' }}" style="{{ m[3]|number_format > m[2]|number_format ? 'background:#e6f7f5;color:#0a7468;' : '' }}">{{ m[1] }}</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="tab-elim" role="tabpanel">
+            <div class="rounded-3 p-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+              <div class="fw-semibold mb-3 small text-muted text-uppercase">Élimination directe — Quarts de finale</div>
+              <div class="d-flex gap-3 mb-3">
+                <div class="d-flex flex-column justify-content-around gap-2" style="flex:0 0 160px;">
+                  <div class="small text-muted text-center mb-1">Quarts</div>
+                  {% for match in [['Abdelkader L.','Camille M.','Abdelkader L.'],['Théo R.','Maxime D.','Maxime D.'],['Léa F.','Hugo P.','Léa F.'],['Inès B.','Sara T.','?']] %}
+                  <div class="mb-1">
+                    <div class="rounded-2 mb-1 px-2 py-1 small fw-semibold {{ match[2] == match[0] ? 'text-white' : 'text-muted' }}" style="border:1px solid {{ match[2] == match[0] ? '#0f9e8e' : '#dee2e6' }};background:{{ match[2] == match[0] ? '#0f9e8e' : '#fff' }};">{{ match[0] }}</div>
+                    <div class="rounded-2 px-2 py-1 small fw-semibold {{ match[2] == match[1] ? 'text-white' : 'text-muted' }}" style="border:1px solid {{ match[2] == match[1] ? '#0f9e8e' : '#dee2e6' }};background:{{ match[2] == match[1] ? '#0f9e8e' : '#fff' }};">{{ match[1] }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="d-flex align-items-center" style="flex:0 0 24px;">
+                  <svg width="24" height="220" viewBox="0 0 24 220" fill="none">
+                    <path d="M0 27 H12 V82 H24" stroke="#0f9e8e" stroke-width="1.5" fill="none"/>
+                    <path d="M0 137 H12 V192 H24" stroke="#0f9e8e" stroke-width="1.5" fill="none"/>
+                  </svg>
+                </div>
+                <div class="d-flex flex-column justify-content-around gap-2" style="flex:0 0 160px;">
+                  <div class="small text-muted text-center mb-1">Demies</div>
+                  {% for match in [['Abdelkader L.','Maxime D.','Abdelkader L.'],['Léa F.','?','?']] %}
+                  <div class="mb-1" style="margin-top:{{ loop.first ? '27px' : '55px' }}">
+                    <div class="rounded-2 mb-1 px-2 py-1 small fw-semibold {{ match[2] == match[0] ? 'text-white' : 'text-muted' }}" style="border:1px solid {{ match[2] == match[0] ? '#0f9e8e' : '#dee2e6' }};background:{{ match[2] == match[0] ? '#0f9e8e' : '#fff' }};">{{ match[0] }}</div>
+                    <div class="rounded-2 px-2 py-1 small fst-italic text-muted" style="border:1px solid #dee2e6;background:#fff;">{{ match[1] == '?' ? 'En attente…' : match[1] }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="d-flex flex-column justify-content-center" style="flex:0 0 150px;">
+                  <div class="small text-muted text-center mb-2">Finale</div>
+                  <div style="margin-top:55px;">
+                    <div class="rounded-2 mb-1 px-2 py-1 small fw-bold text-white text-center" style="border:1px solid #0f9e8e;background:#0f9e8e;">Abdelkader L.</div>
+                    <div class="rounded-2 px-2 py-1 small text-center text-muted fst-italic" style="border:1px solid #dee2e6;background:#fff;">En attente…</div>
+                  </div>
+                  <div class="text-center mt-3"><span style="font-size:1.6rem;">🏆</span></div>
+                </div>
+              </div>
+              <div class="text-center small text-muted"><i class="bi bi-hand-index me-1"></i>Cliquez sur un joueur pour le désigner vainqueur</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <div class="badge bg-light text-dark border"><i class="bi bi-diagram-3 me-1"></i>Élimination directe</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-grid me-1"></i>Poules (round-robin)</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-trophy me-1"></i>Tournoi de consolation</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-floppy me-1"></i>Sauvegarde</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal : Marqueur d'impacts #}
+<div class="modal fade" id="modal-impacts" tabindex="-1" aria-labelledby="modal-impacts-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-impacts-label"><span class="me-2">🎾</span>Marqueur d'impacts</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-4">Cliquez sur le terrain pour marquer les points de frappe d'un élève. Observez la répartition et imprimez la fiche en un clic.</p>
+        <div class="row g-3 align-items-start">
+          <div class="col-md-5 text-center">
+            <div class="fw-semibold small text-muted text-uppercase mb-2">Terrain badminton</div>
+            <div class="d-inline-block" style="border:2px solid #dee2e6;border-radius:6px;background:#1a7a2e;padding:4px;">
+              <svg viewBox="0 0 122 254" width="100" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+                <rect width="122" height="254" fill="#2d9e45"/>
+                <rect x="6" y="6" width="110" height="242" fill="#2e7d32"/>
+                <rect x="6" y="6" width="110" height="242" fill="none" stroke="white" stroke-width="1.5"/>
+                <line x1="14" y1="6" x2="14" y2="248" stroke="white" stroke-width="0.8"/>
+                <line x1="108" y1="6" x2="108" y2="248" stroke="white" stroke-width="0.8"/>
+                <line x1="6" y1="20" x2="116" y2="20" stroke="white" stroke-width="0.8"/>
+                <line x1="6" y1="234" x2="116" y2="234" stroke="white" stroke-width="0.8"/>
+                <line x1="6" y1="127" x2="116" y2="127" stroke="white" stroke-width="2.5"/>
+                <line x1="6" y1="91" x2="116" y2="91" stroke="white" stroke-width="0.8"/>
+                <line x1="6" y1="163" x2="116" y2="163" stroke="white" stroke-width="0.8"/>
+                <line x1="61" y1="6" x2="61" y2="91" stroke="white" stroke-width="0.8"/>
+                <line x1="61" y1="163" x2="61" y2="248" stroke="white" stroke-width="0.8"/>
+                <circle cx="38" cy="80"  r="5" fill="#f5b800" stroke="white" stroke-width="1"/>
+                <text x="38" y="84" text-anchor="middle" fill="white" font-size="6" font-weight="bold">1</text>
+                <circle cx="82" cy="45"  r="5" fill="#f5b800" stroke="white" stroke-width="1"/>
+                <text x="82" y="49" text-anchor="middle" fill="white" font-size="6" font-weight="bold">2</text>
+                <circle cx="55" cy="105" r="5" fill="#f5b800" stroke="white" stroke-width="1"/>
+                <text x="55" y="109" text-anchor="middle" fill="white" font-size="6" font-weight="bold">3</text>
+                <circle cx="95" cy="70"  r="5" fill="#e84020" stroke="white" stroke-width="1"/>
+                <text x="95" y="74" text-anchor="middle" fill="white" font-size="6" font-weight="bold">4</text>
+                <circle cx="25" cy="30"  r="5" fill="#f5b800" stroke="white" stroke-width="1"/>
+                <text x="25" y="34" text-anchor="middle" fill="white" font-size="6" font-weight="bold">5</text>
+                <circle cx="70" cy="90"  r="5" fill="#f5b800" stroke="white" stroke-width="1"/>
+                <text x="70" y="94" text-anchor="middle" fill="white" font-size="6" font-weight="bold">6</text>
+              </svg>
+            </div>
+            <div class="text-muted small mt-2"><i class="bi bi-cursor-fill me-1"></i>Clic → marque un impact</div>
+          </div>
+          <div class="col-md-7">
+            <div class="mb-3">
+              <div class="small fw-semibold text-muted text-uppercase mb-1">Élève observé</div>
+              <div class="d-flex align-items-center gap-2 p-2 rounded-2" style="background:#e6f7f5;border:1px solid #0f9e8e;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:32px;height:32px;font-size:.8rem;background:#0f9e8e;flex-shrink:0;">C</div>
+                <span class="fw-semibold">Camille M.</span>
+                <span class="ms-auto badge" style="background:#0f9e8e;color:#fff;">6 impacts</span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="small fw-semibold text-muted text-uppercase mb-1">Observateur</div>
+              <div class="d-flex align-items-center gap-2 p-2 rounded-2" style="background:#f8f9fa;border:1px solid #dee2e6;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:32px;height:32px;font-size:.8rem;background:#6c757d;flex-shrink:0;">T</div>
+                <span class="text-muted">Théo R.</span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="small fw-semibold text-muted text-uppercase mb-2">Répartition des impacts</div>
+              <div class="row g-2" style="font-size:.8rem;">
+                {% for zone in [['Fond de court','4','#0f9e8e'],['Milieu','2','#f5b800'],['Filet','0','#dee2e6']] %}
+                <div class="col-4 text-center">
+                  <div class="rounded-2 py-2 fw-bold" style="background:{{ zone[2] }}20;border:1px solid {{ zone[2] }}50;color:{{ zone[2] == '#dee2e6' ? '#aaa' : zone[2] }};">{{ zone[1] }}</div>
+                  <div class="text-muted mt-1" style="font-size:.72rem;">{{ zone[0] }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button class="btn btn-sm btn-outline-warning px-2 py-1" disabled style="font-size:.8rem;"><i class="bi bi-arrow-counterclockwise me-1"></i>Annuler dernier</button>
+              <button class="btn btn-sm px-2 py-1 text-white" disabled style="font-size:.8rem;background:#0f9e8e;"><i class="bi bi-printer me-1"></i>Imprimer</button>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <div class="badge bg-light text-dark border"><i class="bi bi-grid-3x3 me-1"></i>Badminton / Tennis / Ping-pong</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-person-check me-1"></i>Observé + observateur</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-printer me-1"></i>Impression A4</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-floppy me-1"></i>Sauvegarde</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal : Équipes équilibrées #}
+<div class="modal fade" id="modal-equipes" tabindex="-1" aria-labelledby="modal-equipes-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1a2b3a,#0f9e8e);">
+        <h5 class="modal-title fw-bold" id="modal-equipes-label"><span class="me-2">⚖️</span>Équipes équilibrées</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted mb-4">Choisissez le nombre d'équipes, activez la mixité, et l'outil répartit automatiquement vos élèves de façon équilibrée.</p>
+        <div class="rounded-3 p-3 mb-3" style="background:#f8fffe;border:1px solid #d0f0eb;">
+          <div class="fw-semibold mb-3 small text-muted text-uppercase">3 équipes — mixité activée</div>
+          <div class="row g-3">
+            {% for equipe in [['Équipe 1','#0f9e8e',['Abdelkader L.','Camille M.','Théo R.','Léa F.']],['Équipe 2','#1a4fd6',['Inès B.','Maxime D.','Sara T.','Hugo P.']],['Équipe 3','#e84020',['Rayan K.','Zoé M.','Baptiste V.','Amina O.']]] %}
+            <div class="col-md-4">
+              <div class="p-2 rounded-3" style="border:2px solid {{ equipe[1] }}20;background:{{ equipe[1] }}10;">
+                <div class="fw-bold small mb-2" style="color:{{ equipe[1] }};">{{ equipe[0] }}</div>
+                {% for eleve in equipe[2] %}
+                <div class="small py-1 border-bottom border-light-subtle">{{ eleve }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="badge bg-light text-dark border"><i class="bi bi-shuffle me-1"></i>Mélanger</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-gender-ambiguous me-1"></i>Mixité</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-person-check me-1"></i>Sélection d'élèves</div>
+          <div class="badge bg-light text-dark border"><i class="bi bi-floppy me-1"></i>Sauvegarde</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        {% if not (hide_cta ?? false) %}
+        <a href="{{ path('app_register') }}" class="btn fw-bold px-4" style="background:#f5b800;color:#1a2b3a;">
+          <i class="bi bi-person-plus-fill me-2"></i>Essayer gratuitement
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

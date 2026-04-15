@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}EPS Multi-Tools — Outils numériques pour enseignants d'EPS{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block body %}
+{# Hero #}
+<section class="text-white py-5 navbar-eps position-relative overflow-hidden">
+    <div aria-hidden="true" style="position:absolute;top:-60px;right:-80px;width:320px;height:320px;border-radius:50%;background:rgba(245,184,0,.12);pointer-events:none;"></div>
+    <div aria-hidden="true" style="position:absolute;bottom:-80px;left:-60px;width:280px;height:280px;border-radius:50%;background:rgba(232,64,32,.10);pointer-events:none;"></div>
+
+    <div class="container py-4 text-center position-relative">
+        <div class="mb-4">
+            <img src="{{ asset('images/logo.png') }}" alt="EPS Multi-Tools" height="180">
+        </div>
+        <h1 class="display-4 fw-bold mb-3">EPS Multi-Tools</h1>
+        <p class="lead fs-4 mb-4 opacity-90">
+            Des outils numériques conçus pour les enseignants d'EPS du second degré.<br>
+            Gérez vos classes et animez vos cours avec des outils interactifs.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{{ path('app_register') }}" class="btn btn-lg fw-bold px-4 shadow"
+               style="background:#f5b800;color:#1a2b3a;border-color:#f5b800;">
+                <i class="bi bi-person-plus-fill me-2"></i>Créer mon espace gratuit
+            </a>
+            <a href="{{ path('app_login') }}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+            </a>
+        </div>
+    </div>
+</section>
+
+{# Features #}
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-2">Tout ce dont vous avez besoin en cours d'EPS</h2>
+        <p class="text-center text-muted mb-5">Cliquez sur un outil pour voir un aperçu.</p>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-classes" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">👥</div>
+                        <h5 class="fw-bold">Gestion des classes</h5>
+                        <p class="text-muted">Créez vos classes, ajoutez vos élèves manuellement ou importez-les en masse. Retrouvez tous vos effectifs en un clic.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-vitesse" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">⏱️</div>
+                        <h5 class="fw-bold">Compteur de vitesse</h5>
+                        <p class="text-muted">Mesurez le temps de course de chaque élève et calculez automatiquement leur vitesse en m/s et km/h.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-scores" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">🏆</div>
+                        <h5 class="fw-bold">Tableau de scores</h5>
+                        <p class="text-muted">Affichez les scores en temps réel sur un écran ou une tablette. Gérez les points pour des équipes ou des individus.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-actions" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">📊</div>
+                        <h5 class="fw-bold">Compteur d'actions</h5>
+                        <p class="text-muted">Comptez les actions techniques (passes, tirs, actions réussies...) par élève ou par équipe pendant votre séance.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-tournoi" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">🎯</div>
+                        <h5 class="fw-bold">Organisation de tournoi</h5>
+                        <p class="text-muted">Générez automatiquement un tableau de tournoi (poules ou élimination directe) à partir de votre classe.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-impacts" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">🎾</div>
+                        <h5 class="fw-bold">Marqueur d'impacts</h5>
+                        <p class="text-muted">Cliquez sur le terrain pour marquer les zones de frappe. Analysez la répartition des impacts par élève.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" role="button"
+                     data-bs-toggle="modal" data-bs-target="#modal-equipes" style="cursor:pointer;">
+                    <div class="card-body text-center p-4">
+                        <div class="display-5 mb-3">⚖️</div>
+                        <h5 class="fw-bold">Équipes équilibrées</h5>
+                        <p class="text-muted">Constituez des équipes équilibrées en tenant compte de la mixité. Mélangez et ajustez en un clic.</p>
+                        <span class="badge mt-1" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">Aperçu <i class="bi bi-eye ms-1"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# How it works #}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Comment ça marche ?</h2>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;font-size:1.5rem;font-weight:700;">1</div>
+                <h5 class="fw-bold">Créez votre compte</h5>
+                <p class="text-muted">Inscription gratuite et rapide, sans carte bancaire.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;font-size:1.5rem;font-weight:700;">2</div>
+                <h5 class="fw-bold">Ajoutez vos classes</h5>
+                <p class="text-muted">Importez vos élèves en quelques secondes depuis un copier-coller.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;font-size:1.5rem;font-weight:700;">3</div>
+                <h5 class="fw-bold">Utilisez les outils</h5>
+                <p class="text-muted">Sélectionnez une classe et un outil, et c'est parti !</p>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg px-5 shadow">
+                <i class="bi bi-rocket-takeoff-fill me-2"></i>Commencer maintenant
+            </a>
+        </div>
+    </div>
+</section>
+
+{# ── Modals aperçu ──────────────────────────────────────────── #}
+{% include '_tool_modals.html.twig' %}
+
+
+{% endblock %}

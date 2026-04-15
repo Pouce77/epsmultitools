@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block main_class %}container-fluid py-3{% endblock %}
+
+{% block body %}
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ path('app_classe_show', {id: classe.id}) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>{{ classe.nom }}
+        </a>
+        <h4 class="fw-bold mb-0">{% block tool_title %}{% endblock %}</h4>
+    </div>
+    <span class="badge bg-light text-dark border">
+        <i class="bi bi-people me-1"></i>{{ classe.effectif }} élèves
+    </span>
+</div>
+
+{% block tool_body %}{% endblock %}
+{% endblock %}

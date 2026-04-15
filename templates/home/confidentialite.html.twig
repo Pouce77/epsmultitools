@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+{% block title %}Politique de confidentialité — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width:800px;">
+
+    <h1 class="fw-bold mb-1">Politique de confidentialité</h1>
+    <p class="text-muted small mb-2">Conformément au Règlement Général sur la Protection des Données (RGPD — UE 2016/679).</p>
+    <p class="text-muted small mb-5">Dernière mise à jour : 15/04/2026</p>
+
+    {# ── Responsable du traitement ───────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">1. Responsable du traitement</h2>
+        <p class="text-muted">
+            Le responsable du traitement des données personnelles collectées sur ce site est :
+        </p>
+        <dl class="row">
+            <dt class="col-sm-4 text-muted">Nom</dt>
+            <dd class="col-sm-8">Julien Kunze / EPS Multi-Tools</dd>
+
+            <dt class="col-sm-4 text-muted">Adresse</dt>
+            <dd class="col-sm-8">52 rue du Général de Gaulle, 77760 La Chapelle-la-Reine</dd>
+
+            <dt class="col-sm-4 text-muted">E-mail</dt>
+            <dd class="col-sm-8">
+                <a href="mailto:julienkunze@jkwebcreation.fr">julienkunze@jkwebcreation.fr</a>
+            </dd>
+        </dl>
+    </section>
+
+    {# ── Données collectées ──────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">2. Données collectées</h2>
+        <p class="text-muted">Nous collectons les données suivantes lors de l'utilisation du service :</p>
+        <ul class="text-muted">
+            <li><strong>Données de compte</strong> : prénom, nom, adresse e-mail, établissement (optionnel) et mot de passe chiffré (bcrypt), lors de l'inscription.</li>
+            <li><strong>Données pédagogiques</strong> : noms, prénoms, sexe et niveau des élèves saisis par l'enseignant.</li>
+            <li><strong>Données d'usage</strong> : résultats et sessions sauvegardées dans les outils.</li>
+            <li><strong>Données techniques</strong> : logs de connexion (adresse IP, horodatage) nécessaires à la sécurité du service.</li>
+        </ul>
+    </section>
+
+    {# ── Finalités ───────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">3. Finalités du traitement</h2>
+        <table class="table table-sm table-bordered text-muted" style="font-size:.875rem;">
+            <thead class="table-light">
+                <tr>
+                    <th>Finalité</th>
+                    <th>Base légale (RGPD art. 6)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Création et gestion du compte enseignant</td>
+                    <td>Exécution du contrat (6.1.b)</td>
+                </tr>
+                <tr>
+                    <td>Fourniture des outils pédagogiques</td>
+                    <td>Exécution du contrat (6.1.b)</td>
+                </tr>
+                <tr>
+                    <td>Envoi de l'e-mail de réinitialisation du mot de passe</td>
+                    <td>Intérêt légitime (6.1.f)</td>
+                </tr>
+                <tr>
+                    <td>Traitement des demandes de contact</td>
+                    <td>Consentement (6.1.a)</td>
+                </tr>
+                <tr>
+                    <td>Sécurité et prévention des fraudes</td>
+                    <td>Intérêt légitime (6.1.f)</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    {# ── Données des élèves (RGPD mineurs) ───────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">4. Données relatives aux élèves</h2>
+        <div class="alert alert-info border-0" style="font-size:.875rem;">
+            <i class="bi bi-shield-check me-2"></i>
+            Les données des élèves (nom, prénom, sexe, niveau) sont saisies <strong>exclusivement par l'enseignant</strong>, dans le cadre de son activité professionnelle.
+            Elles ne sont pas rendues publiques, ne sont pas partagées avec des tiers et sont supprimées à la demande.
+        </div>
+        <p class="text-muted small">
+            L'enseignant agit en qualité de <strong>responsable de traitement</strong> pour les données de ses élèves
+            et s'engage à respecter les obligations RGPD applicables dans le cadre scolaire
+            (notamment celles issues du cadre réglementaire de son établissement et de la CNIL).
+        </p>
+    </section>
+
+    {# ── Durée de conservation ───────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">5. Durée de conservation</h2>
+        <ul class="text-muted">
+            <li><strong>Données de compte</strong> : conservées pendant toute la durée d'activité du compte, puis supprimées sous 30 jours après clôture.</li>
+            <li><strong>Données pédagogiques</strong> : conservées jusqu'à suppression par l'enseignant ou clôture du compte.</li>
+            <li><strong>Token de réinitialisation de mot de passe</strong> : valable 1 heure, supprimé après utilisation.</li>
+            <li><strong>Logs techniques</strong> : 12 mois.</li>
+        </ul>
+    </section>
+
+    {# ── Partage des données ─────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">6. Partage et sous-traitants</h2>
+        <p class="text-muted">Vos données ne sont ni vendues, ni cédées à des tiers à des fins commerciales.</p>
+        <p class="text-muted">Les sous-traitants techniques auxquels nous faisons appel sont :</p>
+        <ul class="text-muted">
+            <li><strong>Hébergeur :</strong> Hostinger France SARL — serveurs situés en Union européenne.</li>
+            <li><strong>Service d'envoi d'e-mails :</strong> Hostinger SMTP (smtp.hostinger.com) — utilisé pour les e-mails transactionnels (réinitialisation de mot de passe, formulaire de contact).</li>
+        </ul>
+    </section>
+
+    {# ── Transferts hors UE ──────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">7. Transferts hors Union européenne</h2>
+        <p class="text-muted">
+            Aucun transfert de données à caractère personnel hors de l'Union européenne n'est effectué.
+            L'hébergement et le service d'envoi d'e-mails sont assurés par Hostinger, dont les infrastructures sont situées au sein de l'UE.
+        </p>
+    </section>
+
+    {# ── Vos droits ──────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">8. Vos droits</h2>
+        <p class="text-muted">Conformément au RGPD, vous disposez des droits suivants sur vos données personnelles :</p>
+        <div class="row g-2 mb-3">
+            {% for right in [
+                ['bi-eye','Droit d\'accès','Obtenir une copie de vos données'],
+                ['bi-pencil','Droit de rectification','Corriger des données inexactes'],
+                ['bi-trash','Droit à l\'effacement','Demander la suppression de vos données'],
+                ['bi-pause-circle','Droit à la limitation','Restreindre certains traitements'],
+                ['bi-arrow-right-circle','Droit à la portabilité','Récupérer vos données dans un format lisible'],
+                ['bi-hand-thumbs-down','Droit d\'opposition','Vous opposer à certains traitements'],
+            ] %}
+            <div class="col-md-6">
+                <div class="d-flex align-items-start gap-2 p-2 rounded-2" style="background:#f8fffe;border:1px solid #d0f0eb;">
+                    <i class="bi {{ right[0] }} mt-1" style="color:#0f9e8e;flex-shrink:0;"></i>
+                    <div>
+                        <div class="fw-semibold small">{{ right[1] }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">{{ right[2] }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-muted small">
+            Pour exercer ces droits, contactez-nous à
+            <a href="mailto:julienkunze@jkwebcreation.fr">julienkunze@jkwebcreation.fr</a>
+            en précisant l'objet "Demande RGPD". Vous pouvez également adresser une réclamation à la
+            <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>.
+        </p>
+    </section>
+
+    {# ── Sécurité ────────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">9. Sécurité</h2>
+        <p class="text-muted">
+            Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données :
+            chiffrement des mots de passe (bcrypt), connexion HTTPS, accès restreint aux données,
+            tokens de réinitialisation à usage unique avec expiration automatique.
+        </p>
+    </section>
+
+    {# ── Cookies ─────────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">10. Cookies</h2>
+        <p class="text-muted">Ce site n'utilise que des cookies strictement nécessaires à son fonctionnement :</p>
+        <table class="table table-sm table-bordered text-muted" style="font-size:.875rem;">
+            <thead class="table-light">
+                <tr><th>Cookie</th><th>Finalité</th><th>Durée</th><th>Consentement requis</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>PHPSESSID</code></td>
+                    <td>Session d'authentification</td>
+                    <td>Session</td>
+                    <td>Non (technique)</td>
+                </tr>
+                <tr>
+                    <td><code>REMEMBERME</code></td>
+                    <td>Maintien de la connexion ("Se souvenir de moi")</td>
+                    <td>7 jours</td>
+                    <td>Non (fonctionnel, activé par l'utilisateur)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="text-muted small">Aucun cookie de suivi, de publicité ou d'analyse n'est utilisé.</p>
+    </section>
+
+    <p class="text-muted small">Dernière mise à jour : 15/04/2026.</p>
+
+    <div class="mt-4">
+        <a href="{{ path('app_home') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}

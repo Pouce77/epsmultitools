@@ -1,3 +1,186 @@
-body {
-    background-color: skyblue;
+/* ══════════════════════════════════════════════════════════
+   EPS Multi-Tools — Thème (palette logo)
+   Teal    : #0f9e8e   Orange  : #e84020
+   Or      : #f5b800   Marine  : #1a2b3a
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Variables de thème ──────────────────────────────────── */
+:root {
+    --eps-teal:          #0f9e8e;
+    --eps-teal-dark:     #0c8a7c;
+    --eps-teal-darker:   #0a7468;
+    --eps-teal-light:    #e6f7f5;
+    --eps-orange:        #e84020;
+    --eps-gold:          #f5b800;
+    --eps-navy:          #1a2b3a;
+
+    /* Override Bootstrap primary */
+    --bs-primary:            #0f9e8e;
+    --bs-primary-rgb:        15, 158, 142;
+    --bs-link-color:         #0c8a7c;
+    --bs-link-color-rgb:     12, 138, 124;
+    --bs-link-hover-color:   #0a7468;
+    --bs-focus-ring-color:   rgba(15, 158, 142, .25);
 }
+
+/* ── Base ────────────────────────────────────────────────── */
+body {
+    background-color: #f2f7f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* ── Bootstrap primary overrides ────────────────────────── */
+.btn-primary {
+    --bs-btn-bg:               #0f9e8e;
+    --bs-btn-border-color:     #0f9e8e;
+    --bs-btn-hover-bg:         #0c8a7c;
+    --bs-btn-hover-border-color: #0c8a7c;
+    --bs-btn-active-bg:        #0a7468;
+    --bs-btn-active-border-color: #0a7468;
+    --bs-btn-disabled-bg:      #0f9e8e;
+    --bs-btn-disabled-border-color: #0f9e8e;
+}
+
+.btn-outline-primary {
+    --bs-btn-color:            #0f9e8e;
+    --bs-btn-border-color:     #0f9e8e;
+    --bs-btn-hover-bg:         #0f9e8e;
+    --bs-btn-hover-border-color: #0f9e8e;
+    --bs-btn-active-bg:        #0c8a7c;
+    --bs-btn-active-border-color: #0c8a7c;
+}
+
+.text-primary   { color: #0f9e8e !important; }
+.bg-primary     { background-color: #0f9e8e !important; }
+.border-primary { border-color: #0f9e8e !important; }
+
+.badge.bg-primary { background-color: #0f9e8e !important; }
+
+/* form focus ring */
+.form-control:focus,
+.form-select:focus {
+    border-color: #0f9e8e;
+    box-shadow: 0 0 0 .25rem rgba(15, 158, 142, .25);
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+.navbar-eps {
+    background: linear-gradient(135deg, #1a2b3a 0%, #0f6b60 60%, #0f9e8e 100%);
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+footer {
+    border-top: 3px solid var(--eps-teal) !important;
+}
+
+/* ── Tool cards ──────────────────────────────────────────── */
+.tool-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+}
+.tool-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1.5rem rgba(15, 158, 142, .18) !important;
+    z-index: 10;
+}
+.tool-card:has(.dropdown.show) {
+    z-index: 10;
+}
+
+/* ── Score display ───────────────────────────────────────── */
+.score-display {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Timer ───────────────────────────────────────────────── */
+.timer-display,
+.font-monospace {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* ── Elève chip ──────────────────────────────────────────── */
+.eleve-chip {
+    border: 1px solid transparent;
+    transition: background-color 0.1s, border-color 0.1s;
+}
+.eleve-chip:hover {
+    background-color: #d4f0ec !important;
+    border-color: #0f9e8e;
+}
+
+/* ── Bracket match cell ──────────────────────────────────── */
+.bracket-match {
+    border: 1px solid #dee2e6;
+    padding: 0.5rem;
+    min-width: 160px;
+    border-radius: .375rem;
+}
+
+/* ── Form errors ─────────────────────────────────────────── */
+.form-error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* ── Score card overflow ─────────────────────────────────── */
+.score-card-wrapper {
+    overflow-x: auto;
+}
+
+/* ── App dialog (<dialog> natif) ─────────────────────────── */
+dialog.app-dialog {
+    padding: 0;
+    border: none;
+    border-radius: .75rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+    max-width: 90vw;
+}
+
+dialog.app-dialog::backdrop {
+    background: rgba(0, 0, 0, .45);
+    backdrop-filter: blur(3px);
+}
+
+.app-dialog-inner {
+    padding: 1.5rem;
+    min-width: 280px;
+    max-width: 440px;
+    font-family: inherit;
+}
+
+.app-dialog-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .75rem;
+    font-size: 1rem;
+}
+
+.app-dialog-header i { font-size: 1.25rem; }
+
+#dlg-msg {
+    color: #6c757d;
+    margin: 0 0 1.25rem;
+    line-height: 1.5;
+}
+
+.app-dialog-footer {
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-end;
+}
+
+/* ── Misc utilities ──────────────────────────────────────── */
+.opacity-90 { opacity: 0.9; }
+
+.navbar .nav-link:hover { opacity: 0.85; }

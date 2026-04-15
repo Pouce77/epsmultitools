@@ -1,0 +1,217 @@
+{% extends 'outils/_layout.html.twig' %}
+{% block title %}Compteur de vitesse — {{ classe.nom }}{% endblock %}
+{% block tool_title %}⏱️ Compteur de vitesse — Demi-fond{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+{% endblock %}
+
+{% block tool_body %}
+<div data-controller="vitesse"
+     data-vitesse-eleves-value="{{ elevesJson }}"
+     data-vitesse-classe-id-value="{{ classe.id }}">
+
+    {# ── Tablet overlay ─────────────────────────────────────────────── #}
+    <div data-vitesse-target="tabletOverlay"
+         style="display:none; position:fixed; inset:0; z-index:1050; background:#0f172a; flex-direction:column;">
+
+        {# Top bar #}
+        <div class="d-flex align-items-center px-4 py-3" style="border-bottom:1px solid rgba(255,255,255,.12)">
+            <button class="btn btn-outline-light btn-sm me-3" data-action="vitesse#closeTablet">
+                <i class="bi bi-arrow-left me-1"></i>Liste
+            </button>
+            <div class="flex-grow-1 text-center">
+                <span class="fw-bold text-white fs-4" data-vitesse-target="tabletStudentName">—</span>
+            </div>
+            <div style="width:80px"></div>{# spacer #}
+        </div>
+
+        {# Info bar #}
+        <div class="text-center py-2 small" style="color:#94a3b8" data-vitesse-target="tabletInfo">
+            VMA non renseignée
+        </div>
+
+        {# Timer + passages #}
+        <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-3">
+            <div class="font-monospace fw-bold text-center" style="font-size:clamp(4rem,15vw,9rem); color:#60a5fa; line-height:1"
+                 data-vitesse-target="timerDisplay">00:00.0</div>
+
+            <div class="mt-3 text-center" style="min-height:2.5rem" data-vitesse-target="tabletPassageList"></div>
+
+            {# Result panel (hidden during timing) #}
+            <div data-vitesse-target="tabletResult" style="display:none" class="text-center mt-2">
+                <div class="fs-2 fw-bold mb-1" data-vitesse-target="tabletResultSpeed" style="color:#e2e8f0"></div>
+                <div data-vitesse-target="tabletResultBadge" class="mb-3"></div>
+                <button class="btn btn-light btn-lg px-5" data-action="vitesse#closeTablet">
+                    <i class="bi bi-person-fill-up me-2"></i>Élève suivant
+                </button>
+            </div>
+        </div>
+
+        {# Action buttons #}
+        <div class="d-flex gap-3 px-4 pb-5 pt-2" data-vitesse-target="tabletButtons">
+            <button class="btn btn-success flex-fill py-4"
+                    style="font-size:clamp(1.1rem,4vw,1.6rem)"
+                    data-action="vitesse#start"
+                    data-vitesse-target="tabletStartBtn">
+                <i class="bi bi-play-fill d-block fs-2"></i>Démarrer
+            </button>
+            <button class="btn btn-warning flex-fill py-4"
+                    style="font-size:clamp(1.1rem,4vw,1.6rem)"
+                    data-action="vitesse#lap"
+                    data-vitesse-target="tabletLapBtn"
+                    disabled>
+                <i class="bi bi-flag-fill d-block fs-2"></i>Passage
+            </button>
+            <button class="btn btn-danger flex-fill py-4"
+                    style="font-size:clamp(1.1rem,4vw,1.6rem)"
+                    data-action="vitesse#stop"
+                    data-vitesse-target="tabletStopBtn"
+                    disabled>
+                <i class="bi bi-stop-fill d-block fs-2"></i>Arrêter
+            </button>
+        </div>
+    </div>
+
+    {# ── Config bar ─────────────────────────────────────────────────── #}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2 px-3">
+            <div class="row g-3 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label fw-semibold mb-1 small">
+                        <i class="bi bi-arrow-repeat me-1 text-muted"></i>Périmètre piste (m)
+                    </label>
+                    <input type="number" data-vitesse-target="trackInput"
+                           class="form-control form-control-sm" style="width:110px"
+                           value="400" min="1" step="1" placeholder="400">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label fw-semibold mb-1 small">
+                        <i class="bi bi-rulers me-1 text-muted"></i>Écartement plots (m)
+                    </label>
+                    <input type="number" data-vitesse-target="plotInput"
+                           class="form-control form-control-sm" style="width:105px"
+                           value="20" min="1" step="1" placeholder="20">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label fw-semibold mb-1 small">
+                        <i class="bi bi-bullseye me-1 text-muted"></i>% VMA cible
+                    </label>
+                    <div class="input-group input-group-sm" style="width:110px">
+                        <input type="number" data-vitesse-target="vmaTargetInput"
+                               class="form-control" value="70" min="1" max="100" step="1"
+                               data-action="change->vitesse#renderTable">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-primary"
+                            data-action="vitesse#toggleTablet"
+                            data-vitesse-target="tabletToggleBtn">
+                        <i class="bi bi-tablet me-1"></i>Mode tablette
+                    </button>
+                    <button class="btn btn-sm btn-success" data-action="vitesse#saveResults"
+                            data-vitesse-target="saveBtn">
+                        <i class="bi bi-cloud-upload-fill me-1"></i>Sauvegarder
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" data-action="vitesse#resetAll">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Timer + Graphique (côte à côte) ────────────────────────────── #}
+    <div class="row g-3 mb-3">
+
+        {# Chronomètre #}
+        <div class="col-lg-5" data-vitesse-target="desktopTimer">
+            <div class="card border-0 shadow-sm h-100 text-center">
+                <div class="card-body d-flex flex-column justify-content-center py-4">
+                    <div class="display-4 fw-bold font-monospace text-primary mb-3"
+                         data-vitesse-target="timerDisplay">00:00.0</div>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <button class="btn btn-success btn-lg px-4" data-action="vitesse#start" data-vitesse-target="startBtn">
+                            <i class="bi bi-play-fill me-1"></i>Démarrer
+                        </button>
+                        <button class="btn btn-warning btn-lg px-3" data-action="vitesse#lap" data-vitesse-target="lapBtn" disabled>
+                            <i class="bi bi-flag-fill me-1"></i>Passage
+                        </button>
+                        <button class="btn btn-danger btn-lg px-4" data-action="vitesse#stop" data-vitesse-target="stopBtn" disabled>
+                            <i class="bi bi-stop-fill me-1"></i>Arrêter
+                        </button>
+                    </div>
+                    <div class="text-muted small mt-3" data-vitesse-target="currentStudent">
+                        Sélectionnez un élève ci-dessous
+                    </div>
+                    {# Légende #}
+                    <div class="d-flex gap-3 flex-wrap justify-content-center mt-3 pt-2 border-top">
+                        <small class="text-muted"><span class="fw-semibold text-primary">V. inst.</span> = dernier passage</small>
+                        <small class="text-muted"><span class="fw-semibold text-info">V. moy.</span> = moyenne</small>
+                        <small class="text-muted"><span class="fw-semibold">Contrat</span> = V. moy. ≥ % VMA cible</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Graphique — toujours visible #}
+        <div class="col-lg-7" data-vitesse-target="chartContainer">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body py-3 px-3 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-semibold mb-0" style="color:#0f9e8e;">
+                            <i class="bi bi-graph-up me-2"></i>Vitesses par passage
+                        </h6>
+                        <small class="text-muted">— — cible VMA</small>
+                    </div>
+                    <div class="flex-grow-1" style="min-height:200px;position:relative;">
+                        <canvas data-vitesse-target="chartCanvas"></canvas>
+                        <div data-vitesse-target="chartPlaceholder"
+                             class="position-absolute top-50 start-50 translate-middle text-center text-muted"
+                             style="pointer-events:none;">
+                            <i class="bi bi-graph-up fs-1 d-block mb-2 opacity-25"></i>
+                            <small>Le graphique apparaîtra ici<br>dès le premier passage enregistré</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# ── Tableau élèves ──────────────────────────────────────────────── #}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-2 px-3" data-vitesse-target="tableHint">
+            <small class="fw-semibold text-muted">
+                Cliquez sur un élève pour le sélectionner · Saisissez sa VMA (km/h) · <strong>Passage</strong> à chaque plot, <strong>Arrêter</strong> au dernier
+            </small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Élève</th>
+                        <th class="text-center" style="width:85px">
+                            VMA <small class="fw-normal text-muted">(km/h)</small>
+                        </th>
+                        <th class="text-center" style="width:75px">Passages</th>
+                        <th class="text-center" style="width:95px">
+                            V. inst. <small class="fw-normal text-muted">(km/h)</small>
+                        </th>
+                        <th class="text-center" style="width:95px">
+                            V. moy. <small class="fw-normal text-muted">(km/h)</small>
+                        </th>
+                        <th class="text-center" style="width:80px">% VMA</th>
+                        <th class="text-center" style="width:75px">Contrat</th>
+                        <th class="text-center" style="width:50px"></th>
+                    </tr>
+                </thead>
+                <tbody data-vitesse-target="tableBody">
+                    {# Filled by Stimulus #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

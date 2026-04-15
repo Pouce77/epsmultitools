@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="d-flex align-items-center justify-content-between mb-4 p-4 rounded-3 text-white"
+     style="background: linear-gradient(135deg, #1a2b3a 0%, #0f6b60 60%, #0f9e8e 100%);">
+    <div class="d-flex align-items-center gap-3">
+        <img src="{{ asset('images/logo.png') }}" alt="" height="56">
+        <div>
+            <h1 class="fw-bold mb-0 fs-3">Tableau de bord - {{ app.user.prenom }}</h1>
+            <p class="mb-0 opacity-75 small">{{ classes|length }} classe(s)</p>
+        </div>
+    </div>
+    <a href="{{ path('app_classe_new') }}" class="btn fw-semibold px-3"
+       style="background:#f5b800;color:#1a2b3a;border-color:#f5b800;">
+        <i class="bi bi-plus-lg me-1"></i>Nouvelle classe
+    </a>
+</div>
+
+{% if classes is empty %}
+<div class="card border-0 shadow-sm text-center py-5" style="border-top: 3px solid #0f9e8e !important;">
+    <div class="card-body">
+        <img src="{{ asset('images/logo.png') }}" alt="" height="72" style="opacity:.7;" class="mb-3">
+        <h4 class="fw-bold">Aucune classe pour le moment</h4>
+        <p class="text-muted">Commencez par créer votre première classe pour accéder aux outils.</p>
+        <a href="{{ path('app_classe_new') }}" class="btn btn-primary btn-lg mt-2">
+            <i class="bi bi-plus-lg me-2"></i>Créer ma première classe
+        </a>
+    </div>
+</div>
+{% else %}
+
+{# Group by school year #}
+{% set years = [] %}
+{% for classe in classes %}
+    {% if classe.anneeScolaire not in years %}
+        {% set years = years|merge([classe.anneeScolaire]) %}
+    {% endif %}
+{% endfor %}
+
+{% for year in years %}
+    <h5 class="text-muted fw-semibold mb-3 mt-4">
+        <i class="bi bi-calendar3 me-2"></i>Année {{ year }}
+    </h5>
+    <div class="row g-3 mb-2">
+        {% for classe in classes %}
+            {% if classe.anneeScolaire == year %}
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm tool-card" style="border-top: 3px solid #0f9e8e !important;">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <div>
+                                <h5 class="fw-bold mb-0">{{ classe.nom }}</h5>
+                                {% if classe.niveau %}
+                                    <span class="badge" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;">{{ classe.niveau }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="badge bg-light text-dark border fs-6">{{ classe.effectif }} élèves</span>
+                        </div>
+
+                        <div class="d-flex gap-1 flex-wrap mt-3">
+                            <a href="{{ path('app_classe_show', {id: classe.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-people me-1"></i>Élèves
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="bi bi-tools me-1"></i>Outils
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_outil_vitesse', {classeId: classe.id}) }}">
+                                            <span class="me-2">⏱️</span>Compteur de vitesse
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_outil_scores', {classeId: classe.id}) }}">
+                                            <span class="me-2">🏆</span>Tableau de scores
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_outil_actions', {classeId: classe.id}) }}">
+                                            <span class="me-2">📊</span>Compteur d'actions
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_outil_tournoi', {classeId: classe.id}) }}">
+                                            <span class="me-2">🎯</span>Tournoi
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_outil_equipes', {classeId: classe.id}) }}">
+                                            <span class="me-2">⚖️</span>Équipes équilibrées
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_outil_impacts', {classeId: classe.id}) }}">
+                                            <span class="me-2">🎾</span>Marqueur d'impacts
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endfor %}
+
+{% endif %}
+
+{# Quick tool access #}
+<div class="card border-0 shadow-sm mt-5" style="border-top: 3px solid #0f9e8e !important;">
+    <div class="card-header bg-white border-0 pb-0 pt-4 px-4">
+        <h5 class="fw-bold text-primary"><i class="bi bi-grid-fill me-2"></i>Les outils disponibles</h5>
+        <p class="text-muted small mb-0">Choisissez d'abord une classe depuis les cartes ci-dessus</p>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-3">
+            {% set tools = [
+                {icon: '⏱️', name: 'Compteur de vitesse',  desc: 'Mesure du temps et calcul de vitesse',  color: '#0f9e8e', modal: 'modal-vitesse'},
+                {icon: '🏆', name: 'Tableau de scores',     desc: 'Scores en temps réel',                  color: '#f5b800', modal: 'modal-scores'},
+                {icon: '📊', name: 'Compteur d\'actions',   desc: 'Comptage par élève/équipe',             color: '#e84020', modal: 'modal-actions'},
+                {icon: '🎯', name: 'Tournoi',               desc: 'Poules, élimination, défi',             color: '#0f9e8e', modal: 'modal-tournoi'},
+                {icon: '⚖️', name: 'Équipes équilibrées',   desc: 'Répartition mixte et par niveau',       color: '#1a2b3a', modal: 'modal-equipes'},
+                {icon: '🎾', name: 'Marqueur d\'impacts',   desc: 'Badminton · Tennis · Tennis de table',  color: '#e84020', modal: 'modal-impacts'},
+            ] %}
+            {% for tool in tools %}
+            <div class="col-sm-6 col-lg">
+                <div class="text-center p-3 rounded-3 h-100"
+                     role="button" style="cursor:pointer;background:color-mix(in srgb,{{ tool.color }} 10%,white);border:1px solid color-mix(in srgb,{{ tool.color }} 25%,transparent);transition:transform .15s,box-shadow .15s;"
+                     data-bs-toggle="modal" data-bs-target="#{{ tool.modal }}"
+                     onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,.1)'"
+                     onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    <div class="fs-2 mb-1">{{ tool.icon }}</div>
+                    <div class="fw-semibold small">{{ tool.name }}</div>
+                    <div class="text-muted" style="font-size:0.75rem">{{ tool.desc }}</div>
+                    <div class="mt-2"><span class="badge" style="background:#e6f7f5;color:#0a7468;border:1px solid #0f9e8e;font-size:.68rem;">Aperçu <i class="bi bi-eye ms-1"></i></span></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% include '_tool_modals.html.twig' with {hide_cta: true} %}
+
+{% endblock %}

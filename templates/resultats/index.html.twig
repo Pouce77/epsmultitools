@@ -1,0 +1,368 @@
+{% extends 'base.html.twig' %}
+{% block title %}Résultats sauvegardés — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="fw-bold mb-1"><i class="bi bi-archive-fill text-primary me-2"></i>Résultats sauvegardés</h1>
+        <p class="text-muted mb-0">{{ resultats|length }} résultat(s) trouvé(s)</p>
+    </div>
+</div>
+
+{# ── Filtres ──────────────────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-2 px-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label fw-semibold mb-1 small">Outil</label>
+                <select name="outil" class="form-select form-select-sm" style="width:180px">
+                    <option value="">— Tous —</option>
+                    {% for o in outils %}
+                        <option value="{{ o }}" {{ (filters.outil ?? '') == o ? 'selected' : '' }}>
+                            {{ o|capitalize }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label fw-semibold mb-1 small">Classe</label>
+                <select name="classeId" class="form-select form-select-sm" style="width:160px">
+                    <option value="">— Toutes —</option>
+                    {% for classe in classes %}
+                        <option value="{{ classe.id }}" {{ (filters.classeId ?? '') == classe.id ? 'selected' : '' }}>
+                            {{ classe.nom }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label fw-semibold mb-1 small">Du</label>
+                <input type="date" name="dateFrom" class="form-control form-control-sm"
+                       value="{{ filters.dateFrom ?? '' }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label fw-semibold mb-1 small">Au</label>
+                <input type="date" name="dateTo" class="form-control form-control-sm"
+                       value="{{ filters.dateTo ?? '' }}">
+            </div>
+            <div class="col-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm px-3">
+                    <i class="bi bi-funnel me-1"></i>Filtrer
+                </button>
+                {% if filters is not empty %}
+                    <a href="{{ path('app_resultat_index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Résultats ────────────────────────────────────────────────────── #}
+{% if resultats is empty %}
+    <div class="card border-0 shadow-sm text-center py-5">
+        <div class="card-body">
+            <div class="display-4 mb-3">📭</div>
+            <h4 class="fw-bold">Aucun résultat sauvegardé</h4>
+            <p class="text-muted">Utilisez le bouton <strong>Sauvegarder</strong> dans chaque outil pour enregistrer vos sessions.</p>
+        </div>
+    </div>
+{% else %}
+<div class="accordion accordion-flush shadow-sm rounded overflow-hidden" id="resultatsAccordion"
+     data-controller="resultats">
+{% for resultat in resultats %}
+    {% set rid = 'r' ~ resultat.id %}
+    <div class="accordion-item border-0 border-bottom">
+        <div class="accordion-header">
+            <button class="accordion-button collapsed py-3 px-3"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ rid }}"
+                    aria-expanded="false">
+                <div class="d-flex align-items-center gap-3 flex-wrap w-100 me-3">
+                    <span class="fs-5">{{ resultat.outilIcon }}</span>
+                    <span class="fw-semibold">{{ resultat.outilLabel }}</span>
+                    <span class="badge bg-light text-dark border">{{ resultat.classe.nom }}</span>
+                    {% if resultat.label %}
+                        <span class="text-muted fst-italic small">"{{ resultat.label }}"</span>
+                    {% endif %}
+                    <span class="ms-auto text-muted small me-3">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        {{ resultat.createdAt|date('d/m/Y à H:i') }}
+                    </span>
+                </div>
+            </button>
+        </div>
+        <div id="collapse{{ rid }}" class="accordion-collapse collapse" data-bs-parent="#resultatsAccordion">
+            <div class="accordion-body pt-2 pb-3">
+                {# ── Vitesse ─────────────────────────── #}
+                {% if resultat.outil == 'vitesse' %}
+                    {% set d = resultat.data %}
+                    {% if d.config is defined %}
+                        <p class="text-muted small mb-2">
+                            Plots : <strong>{{ d.config.plotDistance }}m</strong> ·
+                            VMA cible : <strong>{{ d.config.vmaTargetPct }}%</strong>
+                        </p>
+                    {% endif %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Élève</th>
+                                    <th class="text-center">VMA (km/h)</th>
+                                    <th class="text-center">Passages</th>
+                                    <th class="text-center">V. moy. (km/h)</th>
+                                    <th class="text-center">% VMA</th>
+                                    <th class="text-center">Contrat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in d.resultats %}
+                                <tr>
+                                    <td class="fw-semibold">
+                                        {{ r.fullName }}
+                                        {% if r.sexe == 'M' %}<small class="text-info ms-1">M</small>{% elseif r.sexe == 'F' %}<small class="text-danger ms-1">F</small>{% endif %}
+                                    </td>
+                                    <td class="text-center">{{ r.vmaKmh ?? '—' }}</td>
+                                    <td class="text-center">{{ r.nbPassages ?? '—' }}</td>
+                                    <td class="text-center fw-bold text-primary">{{ r.avgKmh is defined ? r.avgKmh|number_format(1) : '—' }}</td>
+                                    <td class="text-center fw-bold {{ r.contrat ?? false ? 'text-success' : 'text-danger' }}">
+                                        {{ r.vmaPercent is defined ? r.vmaPercent|number_format(0) ~ '%' : '—' }}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if r.contrat is defined %}
+                                            {% if r.contrat %}
+                                                <span class="badge bg-success">✓</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">✗</span>
+                                            {% endif %}
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                {# ── Actions ─────────────────────────── #}
+                {% elseif resultat.outil == 'actions' %}
+                    {% set d = resultat.data %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Élève</th>
+                                    {% for label in d.labels %}
+                                        <th class="text-center">{{ label }}</th>
+                                    {% endfor %}
+                                    <th class="text-center fw-bold">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in d.resultats %}
+                                <tr>
+                                    <td class="fw-semibold">
+                                        {{ r.fullName }}
+                                        {% if r.sexe == 'M' %}<small class="text-info ms-1">M</small>{% elseif r.sexe == 'F' %}<small class="text-danger ms-1">F</small>{% endif %}
+                                    </td>
+                                    {% for c in r.counts %}
+                                        <td class="text-center">{{ c }}</td>
+                                    {% endfor %}
+                                    <td class="text-center fw-bold text-success">{{ r.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                {# ── Scores ──────────────────────────── #}
+                {% elseif resultat.outil == 'scores' %}
+                    {% set d = resultat.data %}
+                    <div class="d-flex gap-3 flex-wrap">
+                        {% for r in d.resultats %}
+                            <div class="card border-0 shadow-sm text-center px-4 py-3" style="min-width:140px">
+                                <div class="fw-semibold small text-muted mb-1">{{ r.team }}</div>
+                                <div class="fw-bold display-6">{{ r.score }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                {# ── Tournoi ─────────────────────────── #}
+                {% elseif resultat.outil == 'tournoi' %}
+                    {% set td = tournoiDisplays[resultat.id] ?? null %}
+                    {% if td %}
+
+                        {# Défi #}
+                        {% if td.mode == 'defi' %}
+                            <p class="text-muted small mb-2"><i class="bi bi-trophy me-1"></i>Mode Défi — {{ td.rows|length }} participant(s)</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-center" style="width:40px">#</th>
+                                            <th>Joueur</th>
+                                            <th class="text-center">Pts</th>
+                                            <th class="text-center">J</th>
+                                            <th class="text-center text-success">V</th>
+                                            <th class="text-center text-warning">N</th>
+                                            <th class="text-center text-danger">D</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i, row in td.rows %}
+                                        <tr>
+                                            <td class="text-center">
+                                                {% if i == 0 %}<span class="badge bg-warning text-dark">🥇</span>
+                                                {% elseif i == 1 %}<span class="badge bg-secondary">🥈</span>
+                                                {% elseif i == 2 %}<span class="badge" style="background:#cd7f32;color:white">🥉</span>
+                                                {% else %}<span class="text-muted">{{ i + 1 }}</span>{% endif %}
+                                            </td>
+                                            <td class="fw-semibold">{{ row.name }}</td>
+                                            <td class="text-center fw-bold text-primary">{{ row.pts }}</td>
+                                            <td class="text-center text-muted">{{ row.j }}</td>
+                                            <td class="text-center text-success">{{ row.g }}</td>
+                                            <td class="text-center text-warning">{{ row.n }}</td>
+                                            <td class="text-center text-danger">{{ row.p }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if td.history %}
+                                <details class="mt-2">
+                                    <summary class="text-muted small" style="cursor:pointer">
+                                        <i class="bi bi-clock-history me-1"></i>{{ td.history|length }} match(s) joué(s)
+                                    </summary>
+                                    <ol class="small mt-1 ps-4 text-muted">
+                                        {% for h in td.history %}
+                                            <li>{{ h.p1 }} <strong>{{ h.s1 }} – {{ h.s2 }}</strong> {{ h.p2 }}</li>
+                                        {% endfor %}
+                                    </ol>
+                                </details>
+                            {% endif %}
+
+                        {# Poules #}
+                        {% elseif td.mode == 'roundrobin' %}
+                            <p class="text-muted small mb-2"><i class="bi bi-grid me-1"></i>Mode Poules — {{ td.teams|length }} équipe(s) · V={{ td.config.winPts }}pts N={{ td.config.drawPts }}pts D={{ td.config.lossPts }}pts</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-center" style="width:36px">#</th>
+                                            <th>Équipe</th>
+                                            <th class="text-center">J</th>
+                                            <th class="text-center text-success">V</th>
+                                            <th class="text-center text-warning">N</th>
+                                            <th class="text-center text-danger">D</th>
+                                            <th class="text-center">B+</th>
+                                            <th class="text-center">B−</th>
+                                            <th class="text-center">G.A.</th>
+                                            <th class="text-center fw-bold">Pts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i, row in td.rows %}
+                                        {% set ga = row.bp - row.bc %}
+                                        <tr>
+                                            <td class="text-center text-muted small">{{ i + 1 }}</td>
+                                            <td class="fw-semibold">{{ row.name }}</td>
+                                            <td class="text-center text-muted">{{ row.j }}</td>
+                                            <td class="text-center text-success">{{ row.g }}</td>
+                                            <td class="text-center text-warning">{{ row.n }}</td>
+                                            <td class="text-center text-danger">{{ row.p }}</td>
+                                            <td class="text-center">{{ row.bp }}</td>
+                                            <td class="text-center">{{ row.bc }}</td>
+                                            <td class="text-center fw-semibold {{ ga > 0 ? 'text-success' : (ga < 0 ? 'text-danger' : 'text-muted') }}">
+                                                {{ ga > 0 ? '+' : '' }}{{ ga }}
+                                            </td>
+                                            <td class="text-center fw-bold text-primary">{{ row.pts }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        {# Élimination #}
+                        {% else %}
+                            <p class="text-muted small mb-2"><i class="bi bi-diagram-2 me-1"></i>Mode Élimination directe — {{ td.teams|length }} participant(s)</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for t in td.teams %}
+                                    <span class="badge bg-light text-dark border">{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                    {% else %}
+                        <p class="text-muted small">Données non disponibles.</p>
+                    {% endif %}
+
+                {# ── Impacts ─────────────────────────── #}
+                {% elseif resultat.outil == 'impacts' %}
+                    {% set d = resultat.data %}
+                    {% set sportLabels = {'badminton': 'Badminton', 'tennis': 'Tennis', 'pingpong': 'Tennis de table'} %}
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ sportLabels[d.sport] ?? d.sport }} ·
+                        {{ d.impacts|length }} impact(s)
+                        {% if d.eleve %} · Élève : <strong>{{ d.eleve.name }}</strong>{% endif %}
+                    </p>
+                    {# Répartition par zone #}
+                    {% set zones = {'filet': {'label': 'Filet', 'color': '#e84020'}, 'milieu': {'label': 'Milieu', 'color': '#f5b800'}, 'fond': {'label': 'Fond de court', 'color': '#0f9e8e'}} %}
+                    {% set total = d.impacts|length %}
+                    {% if total > 0 %}
+                        {% set zCounts = {'filet': 0, 'milieu': 0, 'fond': 0} %}
+                        {% for imp in d.impacts %}
+                            {% set zCounts = zCounts|merge({(imp.zone): (zCounts[imp.zone] ?? 0) + 1}) %}
+                        {% endfor %}
+                        <div class="row g-3 mb-3">
+                            {% for zKey, z in zones %}
+                            {% set n = zCounts[zKey] ?? 0 %}
+                            {% set pct = total > 0 ? ((n / total * 100)|round) : 0 %}
+                            <div class="col-4">
+                                <div class="p-2 rounded-2 text-center" style="border:1px solid {{ z.color }}30;background:{{ z.color }}0d;">
+                                    <div class="fw-bold" style="color:{{ z.color }};font-size:1.1rem;">{{ n }}</div>
+                                    <div class="small text-muted">{{ z.label }}</div>
+                                    <div class="mt-1 rounded-pill overflow-hidden" style="height:5px;background:#e9ecef;">
+                                        <div style="width:{{ pct }}%;height:100%;background:{{ z.color }};border-radius:4px;"></div>
+                                    </div>
+                                    <div class="small text-muted mt-1">{{ pct }}%</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {# Par élève si plusieurs #}
+                        {% set eleveGroups = {} %}
+                        {% for imp in d.impacts %}
+                            {% set eleveGroups = eleveGroups|merge({(imp.eleveName): (eleveGroups[imp.eleveName] ?? 0) + 1}) %}
+                        {% endfor %}
+                        {% if eleveGroups|length > 1 %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for name, count in eleveGroups|sort %}
+                                    <span class="badge bg-light text-dark border">{{ name }} <strong>{{ count }}</strong></span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                {# ── Autres ──────────────────────────── #}
+                {% else %}
+                    <p class="text-muted small fst-italic">Affichage non disponible pour cet outil.</p>
+                {% endif %}
+
+                {# Actions #}
+                <div class="mt-3 d-flex justify-content-end">
+                    <button class="btn btn-sm btn-outline-danger"
+                            data-action="resultats#delete"
+                            data-id="{{ resultat.id }}">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

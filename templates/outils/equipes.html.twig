@@ -1,0 +1,111 @@
+{% extends 'outils/_layout.html.twig' %}
+{% block title %}Équipes équilibrées — {{ classe.nom }}{% endblock %}
+{% block tool_title %}⚖️ Équipes équilibrées{% endblock %}
+
+{% block tool_body %}
+<div data-controller="equipes"
+     data-equipes-eleves-value="{{ elevesJson }}">
+
+    {# Student selection panel #}
+    <div class="card border-0 shadow-sm mb-3" style="border-left: 3px solid #0f9e8e !important;">
+        <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between"
+             style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#eleveSelectBody">
+            <span class="fw-semibold small">
+                <i class="bi bi-people-fill text-primary me-1"></i>
+                Élèves participants
+                <span class="ms-1 text-muted fw-normal" data-equipes-target="selectCounter"></span>
+            </span>
+            <i class="bi bi-chevron-down text-muted small"></i>
+        </div>
+        <div class="collapse show" id="eleveSelectBody">
+            <div class="card-body pt-1 pb-2 px-3">
+                <div class="d-flex gap-2 mb-2">
+                    <button class="btn btn-outline-primary btn-sm py-0" data-action="equipes#selectAll">
+                        <i class="bi bi-check2-all me-1"></i>Tous
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm py-0" data-action="equipes#selectNone">
+                        <i class="bi bi-x-lg me-1"></i>Aucun
+                    </button>
+                </div>
+                <div data-equipes-target="eleveSelectList" class="d-flex flex-wrap"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Config #}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2 px-3">
+            <div class="row g-2 align-items-center flex-wrap">
+                <div class="col-auto">
+                    <label class="form-label fw-semibold mb-0 small">Nombre d'équipes</label>
+                </div>
+                <div class="col-auto">
+                    <input type="number" class="form-control form-control-sm" style="width:80px"
+                           data-equipes-target="nbEquipesInput" value="2" min="2" max="10">
+                </div>
+                <div class="col-auto">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="mixiteCheck"
+                               data-equipes-target="mixiteInput" checked>
+                        <label class="form-check-label fw-semibold small" for="mixiteCheck">
+                            Respecter la mixité
+                        </label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="niveauCheck"
+                               data-equipes-target="niveauInput">
+                        <label class="form-check-label fw-semibold small" for="niveauCheck">
+                            Équilibrer par niveau
+                        </label>
+                    </div>
+                </div>
+                <div class="col-auto ms-auto d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" data-action="equipes#generate">
+                        <i class="bi bi-magic me-1"></i>Générer
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" data-action="equipes#shuffle">
+                        <i class="bi bi-shuffle me-1"></i>Mélanger
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" data-action="equipes#print">
+                        <i class="bi bi-printer me-1"></i>Imprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Niveau legend #}
+    <div class="d-flex gap-2 flex-wrap mb-2 px-1 small text-muted align-items-center">
+        <span class="fw-semibold">Niveaux :</span>
+        <span><span class="badge bg-danger">1</span> Faible</span>
+        <span><span class="badge bg-warning text-dark">2</span> Moyen −</span>
+        <span><span class="badge bg-info text-dark">3</span> Moyen</span>
+        <span><span class="badge bg-primary">4</span> Moyen +</span>
+        <span><span class="badge bg-success">5</span> Fort</span>
+        <span class="ms-2"><a href="{{ path('app_classe_show', {id: classe.id}) }}" class="text-muted">
+            <i class="bi bi-pencil-square me-1"></i>Modifier les niveaux dans la fiche classe
+        </a></span>
+    </div>
+
+    {# Info #}
+    <div class="alert alert-info border-0 py-2 small" data-equipes-target="infoText" style="display:none">
+        <i class="bi bi-info-circle me-1"></i>
+        <span data-equipes-target="infoContent"></span>
+    </div>
+
+    {# Teams display #}
+    <div class="row g-3" data-equipes-target="equipesDisplay">
+        <div class="col-12 text-center text-muted py-5">
+            <div class="fs-1 mb-2">⚖️</div>
+            <p>Configurez le nombre d'équipes et cliquez sur <strong>Générer</strong>.</p>
+        </div>
+    </div>
+
+    {# Swap instruction #}
+    <div class="text-center text-muted small mt-2" data-equipes-target="swapHint" style="display:none">
+        <i class="bi bi-arrows-move me-1"></i>Cliquez sur un élève pour le sélectionner, puis cliquez sur un autre pour les échanger.
+    </div>
+</div>
+{% endblock %}

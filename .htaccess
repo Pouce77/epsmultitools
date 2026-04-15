@@ -1,0 +1,10 @@
+# Racine du projet — redirige tout vers public/
+# Utiliser UNIQUEMENT si le document root du sous-domaine Hostinger
+# pointe sur la racine du projet et non sur public/.
+# Si vous avez pu configurer le document root sur public/ dans hPanel,
+# ce fichier est inutile et peut être supprimé.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

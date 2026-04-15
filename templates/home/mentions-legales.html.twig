@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mentions légales — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width:800px;">
+
+    <h1 class="fw-bold mb-1">Mentions légales</h1>
+    <p class="text-muted small mb-5">Conformément à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique.</p>
+
+    {# ── Éditeur ─────────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Éditeur du site</h2>
+        <dl class="row">
+            <dt class="col-sm-4 text-muted">Nom / Raison sociale</dt>
+            <dd class="col-sm-8">Julien Kunze / EPS Multi-Tools</dd>
+
+            <dt class="col-sm-4 text-muted">Statut</dt>
+            <dd class="col-sm-8">Particulier</dd>
+
+            <dt class="col-sm-4 text-muted">Adresse</dt>
+            <dd class="col-sm-8">52 rue du Général de Gaulle, 77760 La Chapelle-la-Reine</dd>
+
+            <dt class="col-sm-4 text-muted">E-mail</dt>
+            <dd class="col-sm-8">
+                <a href="mailto:julienkunze@jkwebcreation.fr">julienkunze@jkwebcreation.fr</a>
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Téléphone</dt>
+            <dd class="col-sm-8">+33 6 82 04 20 82</dd>
+
+            <dt class="col-sm-4 text-muted">SIRET / SIREN</dt>
+            <dd class="col-sm-8">N/A</dd>
+        </dl>
+    </section>
+
+    {# ── Directeur de publication ─────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Directeur de la publication</h2>
+        <p>Julien Kunze</p>
+    </section>
+
+    {# ── Hébergement ─────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Hébergement</h2>
+        <dl class="row">
+            <dt class="col-sm-4 text-muted">Hébergeur</dt>
+            <dd class="col-sm-8">Hostinger France SARL</dd>
+
+            <dt class="col-sm-4 text-muted">Adresse</dt>
+            <dd class="col-sm-8">61 Lordou Vironos Street, 6023 Larnaca, Chypre</dd>
+
+            <dt class="col-sm-4 text-muted">Site web</dt>
+            <dd class="col-sm-8">
+                <a href="https://www.hostinger.com/fr" target="_blank" class="text-decoration-none">
+                    https://www.hostinger.com/fr
+                </a>
+            </dd>
+        </dl>
+    </section>
+
+    {# ── Propriété intellectuelle ─────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Propriété intellectuelle</h2>
+        <p class="text-muted">
+            L'ensemble du contenu de ce site (textes, graphismes, logiciels, code source) est la propriété de
+            Julien Kunze / EPS Multi-Tools,
+            sauf mention contraire. Toute reproduction, même partielle, est interdite sans autorisation préalable.
+        </p>
+    </section>
+
+    {# ── Données personnelles ─────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Données personnelles</h2>
+        <p class="text-muted">
+            La collecte et le traitement des données personnelles sont détaillés dans notre
+            <a href="{{ path('app_confidentialite') }}">politique de confidentialité</a>.
+            Conformément au RGPD et à la loi Informatique et Libertés, vous disposez d'un droit d'accès,
+            de rectification et de suppression de vos données.
+        </p>
+    </section>
+
+    {# ── Cookies ─────────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Cookies</h2>
+        <p class="text-muted">
+            Ce site utilise des cookies techniques strictement nécessaires au fonctionnement (session d'authentification).
+            Aucun cookie de suivi ou de publicité n'est utilisé. Pour en savoir plus, consultez notre
+            <a href="{{ path('app_confidentialite') }}">politique de confidentialité</a>.
+        </p>
+    </section>
+
+    {# ── Crédits ─────────────────────────────────────────────── #}
+    <section class="mb-5">
+        <h2 class="h5 fw-bold border-bottom pb-2 mb-3">Crédits</h2>
+        <p class="text-muted">
+            Développé avec Symfony, Bootstrap et Stimulus.js.<br>
+            Icônes : Bootstrap Icons.<br>
+            Hébergement : Hostinger France SARL.<br>
+            Conception et développement : Julien Kunze.
+        </p>
+    </section>
+
+    <p class="text-muted small">Dernière mise à jour le 15/04/2026.</p>
+
+    <div class="mt-4">
+        <a href="{{ path('app_home') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}

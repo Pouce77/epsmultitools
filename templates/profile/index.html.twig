@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon compte — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width:860px;">
+
+    {# ── En-tête ──────────────────────────────────────────────── #}
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white fs-4 flex-shrink-0"
+             style="width:64px;height:64px;background:#0f9e8e;">
+            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+        </div>
+        <div>
+            <h1 class="fw-bold mb-0 fs-4">{{ user.prenom }} {{ user.nom }}</h1>
+            <div class="text-muted small">{{ user.email }}</div>
+            <div class="text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>
+                Membre depuis le {{ user.createdAt|date('d/m/Y') }}
+            </div>
+        </div>
+    </div>
+
+    {# ── Flash messages ───────────────────────────────────────── #}
+    {% for msg in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# ── Statistiques ─────────────────────────────────────────── #}
+    <div class="row g-3 mb-4">
+        <div class="col-4">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold" style="color:#0f9e8e;">{{ stats.classes }}</div>
+                <div class="text-muted small"><i class="bi bi-people-fill me-1"></i>Classe{{ stats.classes > 1 ? 's' : '' }}</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold" style="color:#0f9e8e;">{{ stats.eleves }}</div>
+                <div class="text-muted small"><i class="bi bi-person-fill me-1"></i>Élève{{ stats.eleves > 1 ? 's' : '' }}</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-3 fw-bold" style="color:#0f9e8e;">{{ stats.resultats }}</div>
+                <div class="text-muted small"><i class="bi bi-archive-fill me-1"></i>Résultat{{ stats.resultats > 1 ? 's' : '' }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Formulaire d'édition ──────────────────────────────────── #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-4">
+                <i class="bi bi-pencil-fill me-2" style="color:#0f9e8e;"></i>Modifier mes informations
+            </h2>
+
+            {{ form_start(profileForm, {
+                action: path('app_profile_edit'),
+                method: 'POST',
+                attr: { novalidate: 'novalidate' }
+            }) }}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    {{ form_label(profileForm.prenom, null, { label_attr: { class: 'form-label fw-semibold' } }) }}
+                    {{ form_widget(profileForm.prenom) }}
+                    {{ form_errors(profileForm.prenom) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(profileForm.nom, null, { label_attr: { class: 'form-label fw-semibold' } }) }}
+                    {{ form_widget(profileForm.nom) }}
+                    {{ form_errors(profileForm.nom) }}
+                </div>
+                <div class="col-12">
+                    {{ form_label(profileForm.email, null, { label_attr: { class: 'form-label fw-semibold' } }) }}
+                    {{ form_widget(profileForm.email) }}
+                    {{ form_errors(profileForm.email) }}
+                </div>
+                <div class="col-12">
+                    {{ form_label(profileForm.etablissement, null, { label_attr: { class: 'form-label fw-semibold' } }) }}
+                    {{ form_widget(profileForm.etablissement) }}
+                    {{ form_errors(profileForm.etablissement) }}
+                </div>
+            </div>
+
+            {# ── Changement de mot de passe (optionnel) ─────────── #}
+            <div class="mt-4">
+                <button class="btn btn-sm btn-outline-secondary" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#pwd-change-collapse">
+                    <i class="bi bi-key me-1"></i>Changer le mot de passe
+                </button>
+                <div class="collapse mt-3" id="pwd-change-collapse">
+                    <div class="p-3 rounded-2" style="background:#f8fffe;border:1px solid #d0f0eb;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form_label(profileForm.newPassword.first, null, { label_attr: { class: 'form-label fw-semibold small' } }) }}
+                                {{ form_widget(profileForm.newPassword.first) }}
+                                {{ form_errors(profileForm.newPassword.first) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_label(profileForm.newPassword.second, null, { label_attr: { class: 'form-label fw-semibold small' } }) }}
+                                {{ form_widget(profileForm.newPassword.second) }}
+                                {{ form_errors(profileForm.newPassword.second) }}
+                                {{ form_errors(profileForm.newPassword) }}
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">
+                            Laissez vide pour conserver votre mot de passe actuel.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-4">
+                <i class="bi bi-floppy-fill me-2"></i>Enregistrer les modifications
+            </button>
+
+            {{ form_end(profileForm) }}
+        </div>
+    </div>
+
+    {# ── Zone de danger ───────────────────────────────────────── #}
+    <div class="card border-danger border-2 mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold text-danger mb-1">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>Zone de danger
+            </h2>
+            <p class="text-muted small mb-3">
+                La suppression de votre compte est <strong>définitive et irréversible</strong>.
+                Toutes vos données seront effacées : classes, élèves et résultats sauvegardés.
+            </p>
+            <button type="button" class="btn btn-outline-danger" id="btn-delete-account">
+                <i class="bi bi-trash3-fill me-2"></i>Supprimer mon compte et toutes mes données
+            </button>
+        </div>
+    </div>
+
+    <a href="{{ path('app_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Retour au tableau de bord
+    </a>
+</div>
+
+{# ── Modal de confirmation de suppression ─────────────────────── #}
+<div class="modal fade" id="modal-delete-account" tabindex="-1" aria-labelledby="modal-delete-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger border-2">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="modal-delete-label">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Vous êtes sur le point de supprimer définitivement votre compte.</p>
+                <ul class="text-danger small mb-3">
+                    <li>{{ stats.classes }} classe{{ stats.classes > 1 ? 's' : '' }}</li>
+                    <li>{{ stats.eleves }} élève{{ stats.eleves > 1 ? 's' : '' }}</li>
+                    <li>{{ stats.resultats }} résultat{{ stats.resultats > 1 ? 's' : '' }} sauvegardé{{ stats.resultats > 1 ? 's' : '' }}</li>
+                </ul>
+                <p class="fw-bold text-danger mb-3">Cette action est irréversible. Êtes-vous sûr(e) ?</p>
+                <label class="form-label small fw-semibold">
+                    Saisissez votre adresse e-mail pour confirmer :
+                </label>
+                <input type="email" id="confirm-email-input" class="form-control"
+                       placeholder="{{ user.email }}" autocomplete="off">
+                <div id="confirm-email-error" class="text-danger small mt-1" style="display:none;">
+                    L'adresse e-mail ne correspond pas.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="POST" action="{{ path('app_profile_delete') }}" id="form-delete-account">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-account') }}">
+                    <button type="submit" class="btn btn-danger fw-bold" id="btn-confirm-delete" disabled>
+                        <i class="bi bi-trash3-fill me-2"></i>Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const modal       = new bootstrap.Modal(document.getElementById('modal-delete-account'))
+    const btnOpen     = document.getElementById('btn-delete-account')
+    const emailInput  = document.getElementById('confirm-email-input')
+    const emailError  = document.getElementById('confirm-email-error')
+    const btnConfirm  = document.getElementById('btn-confirm-delete')
+    const userEmail   = '{{ user.email|e('js') }}'
+
+    btnOpen.addEventListener('click', () => {
+        emailInput.value = ''
+        btnConfirm.disabled = true
+        emailError.style.display = 'none'
+        modal.show()
+    })
+
+    emailInput.addEventListener('input', () => {
+        const ok = emailInput.value.trim() === userEmail
+        btnConfirm.disabled = !ok
+        emailError.style.display = (!ok && emailInput.value.length > 0) ? '' : 'none'
+    })
+})()
+</script>
+{% endblock %}

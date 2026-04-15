@@ -1,0 +1,136 @@
+{% extends 'outils/_layout.html.twig' %}
+{% block title %}Tableau de scores — {{ classe.nom }}{% endblock %}
+{% block tool_title %}🏆 Tableau de scores{% endblock %}
+
+{% block tool_body %}
+<div data-controller="scores"
+     data-scores-eleves-value="{{ elevesJson }}"
+     data-scores-classe-id-value="{{ classe.id }}">
+
+    {# Sport selector — always visible #}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2 px-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="fw-semibold small text-muted me-1">
+                    <i class="bi bi-trophy me-1"></i>Sport :
+                </span>
+                <button class="btn btn-sm btn-primary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="generic">🏆 Générique</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="football">⚽ Football</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="rugby">🏉 Rugby</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="basketball">🏀 Basket-ball</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="handball">🤾 Handball</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="volleyball">🏐 Volley-ball</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="badminton">🏸 Badminton</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="pingpong">🏓 Tennis de table</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="tennis">🎾 Tennis</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="boxe">🥊 Boxe</button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-scores-target="sportBtn"
+                        data-action="scores#selectSport"
+                        data-sport="lutte">🤼 Lutte</button>
+            </div>
+        </div>
+    </div>
+
+    {# ── SETUP PHASE ───────────────────────────────────────────────── #}
+    <div data-scores-target="setupSection">
+
+        {# Config bar (rendered by controller) #}
+        <div class="card border-0 shadow-sm mb-3" data-scores-target="configBar">
+            <div class="card-body py-2 px-3"></div>
+        </div>
+
+        {# Player assignment (rendered by controller) #}
+        <div data-scores-target="assignmentPanel"></div>
+
+        {# Launch button #}
+        <div class="text-center my-4">
+            <button class="btn btn-primary btn-lg px-5 shadow-sm"
+                    data-action="scores#launchGame">
+                <i class="bi bi-play-fill me-2"></i>Lancer
+            </button>
+        </div>
+
+    </div>
+
+    {# ── GAME PHASE ────────────────────────────────────────────────── #}
+    <div data-scores-target="gameSection" style="display:none">
+
+        {# Action buttons #}
+        <div class="d-flex gap-2 justify-content-end mb-3">
+            <button class="btn btn-success btn-sm"
+                    data-action="scores#saveResults"
+                    data-scores-target="saveBtn">
+                <i class="bi bi-cloud-upload-fill me-1"></i>Sauvegarder
+            </button>
+            <button class="btn btn-outline-danger btn-sm"
+                    data-action="scores#resetAll">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Remettre à zéro
+            </button>
+        </div>
+
+        {# Score cards (rendered by controller) #}
+        <div class="row g-3" data-scores-target="scoreDisplay"></div>
+
+        {# Basketball fouls panel (rendered by controller) #}
+        <div data-scores-target="foulsPanel" style="display:none"></div>
+
+        {# Match timer #}
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body py-2 px-3 d-flex align-items-center gap-3 flex-wrap">
+                <span class="fw-semibold small">
+                    <i class="bi bi-stopwatch me-1"></i>Chrono de match
+                </span>
+                <div class="font-monospace fw-bold text-primary fs-5"
+                     data-scores-target="matchTimer">00:00</div>
+                <button class="btn btn-sm btn-success"
+                        data-action="scores#startTimer"
+                        data-scores-target="timerStartBtn">
+                    <i class="bi bi-play-fill"></i> Démarrer
+                </button>
+                <button class="btn btn-sm btn-danger"
+                        data-action="scores#stopTimer"
+                        data-scores-target="timerStopBtn" disabled>
+                    <i class="bi bi-pause-fill"></i> Pause
+                </button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-action="scores#resetTimer">
+                    <i class="bi bi-skip-start-fill"></i> Reset
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'outils/_layout.html.twig' %}
+{% block title %}Tournoi — {{ classe.nom }}{% endblock %}
+{% block tool_title %}🎯 Organisation de tournoi{% endblock %}
+
+{% block tool_body %}
+<div data-controller="tournoi"
+     data-tournoi-eleves-value="{{ elevesJson }}"
+     data-tournoi-classe-id-value="{{ classe.id }}">
+
+    {# Config #}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-end flex-wrap">
+                <div class="col-sm-auto">
+                    <label class="form-label fw-semibold small mb-1">Mode</label>
+                    <div class="btn-group" role="group" data-tournoi-target="modeGroup">
+                        <button type="button" class="btn btn-sm btn-primary" data-action="tournoi#setMode" data-mode="roundrobin">
+                            <i class="bi bi-grid me-1"></i>Poules
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-action="tournoi#setMode" data-mode="elimination">
+                            <i class="bi bi-diagram-3 me-1"></i>Élimination
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-action="tournoi#setMode" data-mode="defi">
+                            <i class="bi bi-trophy me-1"></i>Défi
+                        </button>
+                    </div>
+                </div>
+                <div class="col-sm-auto" id="nbTerrainsWrap">
+                    <label class="form-label fw-semibold small mb-1">Terrains disponibles</label>
+                    <input type="number" class="form-control form-control-sm" style="width:80px"
+                           data-tournoi-target="nbTerrainsInput" value="2" min="1">
+                </div>
+                <div class="col-sm-auto" id="durationWrap">
+                    <label class="form-label fw-semibold small mb-1">Durée / match (min)</label>
+                    <input type="number" class="form-control form-control-sm" style="width:80px"
+                           data-tournoi-target="durationInput" value="5" min="1">
+                </div>
+
+                {# Défi-specific config (hidden by default) #}
+                <div class="col-sm-auto" data-tournoi-target="defiConfig" style="display:none">
+                    <div class="d-flex align-items-start gap-4 flex-wrap">
+
+                        {# Base points #}
+                        <div>
+                            <label class="form-label fw-semibold small mb-1">Points de base</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1">Victoire</div>
+                                    <input type="number" class="form-control form-control-sm text-center"
+                                           style="width:58px" value="3" min="0"
+                                           data-tournoi-target="winPtsInput">
+                                </div>
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1">Nul</div>
+                                    <input type="number" class="form-control form-control-sm text-center"
+                                           style="width:58px" value="1" min="0"
+                                           data-tournoi-target="drawPtsInput">
+                                </div>
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1">Défaite</div>
+                                    <input type="number" class="form-control form-control-sm text-center"
+                                           style="width:58px" value="0" min="0"
+                                           data-tournoi-target="lossPtsInput">
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Rank-based adjustment #}
+                        <div>
+                            <div class="form-check form-switch mb-1">
+                                <input class="form-check-input" type="checkbox" id="rankAdjustCheck"
+                                       data-tournoi-target="rankAdjustInput"
+                                       data-action="change->tournoi#toggleRankAdjust">
+                                <label class="form-check-label fw-semibold small" for="rankAdjustCheck">
+                                    Ajuster selon l'écart de classement
+                                </label>
+                            </div>
+                            <div data-tournoi-target="rankAdjustConfig" style="display:none">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="text-center">
+                                        <div class="small text-muted mb-1"
+                                             title="Points bonus par rang d'écart quand le joueur le moins bien classé gagne (ex: 4e bat le 1er = +3 bonus)">
+                                            <i class="bi bi-arrow-up-circle text-success me-1"></i>Bonus upset<br>
+                                            <span style="font-size:.65rem">/rang d'écart</span>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm text-center"
+                                               style="width:62px" value="1" min="0"
+                                               data-tournoi-target="rankBonusInput">
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="small text-muted mb-1"
+                                             title="Points retirés par rang d'écart quand le joueur le mieux classé gagne (minimum 1 pt)">
+                                            <i class="bi bi-arrow-down-circle text-danger me-1"></i>Malus favori<br>
+                                            <span style="font-size:.65rem">/rang d'écart</span>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm text-center"
+                                               style="width:62px" value="1" min="0"
+                                               data-tournoi-target="rankMalusInput">
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="small text-muted mb-1"
+                                             title="Plafond de points pour une victoire surprise (outsider)">
+                                            <i class="bi bi-slash-circle text-warning me-1"></i>Max outsider<br>
+                                            <span style="font-size:.65rem">(pts max)</span>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm text-center"
+                                               style="width:62px" value="6" min="1"
+                                               data-tournoi-target="rankMaxInput">
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="small text-muted mb-1"
+                                             title="Perte maximale de points pour le favori (pts de base - max)">
+                                            <i class="bi bi-shield-slash text-secondary me-1"></i>Perte max favori<br>
+                                            <span style="font-size:.65rem">(pts perdus max)</span>
+                                        </div>
+                                        <input type="number" class="form-control form-control-sm text-center"
+                                               style="width:62px" value="6" min="0"
+                                               data-tournoi-target="rankMaxLossInput">
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-1" style="font-size:.7rem">
+                                    Exemple (V=3, bonus=1, malus=1, max=6, perte max=6, écart=2) :<br>
+                                    Favori gagne → min(3, max(1, 3−2)) = <b>1 pt</b> · Outsider gagne → min(6, 3+2) = <b>5 pts</b>
+                                </small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Team / player list #}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+            <span class="fw-semibold small" data-tournoi-target="teamListLabel">Équipes / Participants</span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" data-action="tournoi#autoTeams">
+                    <i class="bi bi-magic me-1"></i><span data-tournoi-target="autoTeamsLabel">Charger les élèves</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" data-action="tournoi#addTeam">
+                    <i class="bi bi-plus"></i> <span data-tournoi-target="addLabel">Ajouter une équipe</span>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-2">
+            <div class="d-flex flex-wrap gap-2" data-tournoi-target="teamList">
+                {# Filled by Stimulus #}
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap mb-4">
+        <button class="btn btn-primary btn-lg px-5" data-action="tournoi#generate">
+            <i class="bi bi-play-fill me-2"></i>Lancer le tournoi
+        </button>
+        <div class="vr d-none d-sm-block" style="height:38px"></div>
+        <button class="btn btn-outline-success btn-sm" data-action="tournoi#saveState"
+                data-tournoi-target="saveBtn">
+            <i class="bi bi-cloud-upload-fill me-1"></i>Sauvegarder
+        </button>
+        <div class="position-relative">
+            <button class="btn btn-outline-secondary btn-sm" data-action="tournoi#toggleLoadPanel">
+                <i class="bi bi-cloud-download me-1"></i>Charger
+            </button>
+            <div data-tournoi-target="loadPanel"
+                 style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:300px;z-index:200"
+                 class="card border shadow-sm">
+                <div class="card-header py-2 px-3 d-flex align-items-center justify-content-between bg-white">
+                    <strong class="small">Sauvegardes</strong>
+                    <button type="button" class="btn-close btn-sm" data-action="tournoi#closeLoadPanel"></button>
+                </div>
+                <div class="card-body p-2" data-tournoi-target="loadList" style="max-height:260px;overflow-y:auto">
+                    <p class="text-muted small text-center py-2 mb-0">Chargement…</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Bracket / Défi display #}
+    <div data-tournoi-target="bracketDisplay">
+        {# Filled by Stimulus #}
+    </div>
+</div>
+{% endblock %}

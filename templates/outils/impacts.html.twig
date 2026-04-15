@@ -1,0 +1,277 @@
+{% extends 'outils/_layout.html.twig' %}
+{% block title %}Marqueur d'impacts — {{ classe.nom }}{% endblock %}
+{% block tool_title %}🎯 Marqueur d'impacts{% endblock %}
+
+{% block tool_body %}
+<div data-controller="impacts"
+     data-impacts-eleves-value="{{ elevesJson }}"
+     data-impacts-classe-value="{{ classe.nom }}"
+     data-impacts-classe-id-value="{{ classe.id }}">
+
+    {# ── Barre de sport + bouton mode tablette ─────────────────────────── #}
+    <div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+        <button class="btn btn-primary btn-sm"
+                data-action="impacts#setSport" data-sport="badminton"
+                data-impacts-target="sportBtn">
+            🏸 Badminton
+        </button>
+        <button class="btn btn-outline-secondary btn-sm"
+                data-action="impacts#setSport" data-sport="tennis"
+                data-impacts-target="sportBtn">
+            🎾 Tennis
+        </button>
+        <button class="btn btn-outline-secondary btn-sm"
+                data-action="impacts#setSport" data-sport="pingpong"
+                data-impacts-target="sportBtn">
+            🏓 Tennis de table
+        </button>
+        <button class="btn btn-sm ms-auto fw-semibold"
+                style="background:#1a2b3a;color:white;border:none;"
+                data-action="impacts#enterTabletMode">
+            <i class="bi bi-tablet-landscape me-1"></i>Mode tablette
+        </button>
+    </div>
+
+    {# ── Vue normale ───────────────────────────────────────────────────── #}
+    <div data-impacts-target="normalView">
+        <div class="row g-3 align-items-start">
+
+            {# Terrain #}
+            <div class="col-md-7 col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3 text-center">
+                        <div data-impacts-target="courtContainer"></div>
+                        <p class="text-muted small mt-2 mb-0">
+                            <i class="bi bi-hand-index me-1"></i>Cliquez sur le terrain pour marquer un impact
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {# Contrôles + stats #}
+            <div class="col-md-5 col-lg-6 d-flex flex-column gap-3">
+
+                {# Sélecteurs élèves #}
+                <div class="card border-0 shadow-sm" style="border-left: 3px solid #0f9e8e !important;">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-3 text-primary">
+                            <i class="bi bi-people-fill me-1"></i>Attribution des impacts
+                        </h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small mb-1">
+                                <i class="bi bi-bullseye text-danger me-1"></i>Élève observé
+                                <span class="text-danger" title="Requis">*</span>
+                            </label>
+                            <select class="form-select form-select-sm"
+                                    data-impacts-target="observeSelect"
+                                    data-action="change->impacts#refreshStats">
+                                <option value="">— Sélectionner l'élève dont on note les impacts —</option>
+                                {% for eleve in classe.eleves %}
+                                    <option value="{{ eleve.id }}">{{ eleve.fullName }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Les impacts cliqués seront attribués à cet élève.</div>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold small mb-1">
+                                <i class="bi bi-eye me-1"></i>Observateur <span class="text-muted fw-normal">(optionnel)</span>
+                            </label>
+                            <select class="form-select form-select-sm" data-impacts-target="observateurSelect">
+                                <option value="">— Élève qui réalise l'observation —</option>
+                                {% for eleve in classe.eleves %}
+                                    <option value="{{ eleve.id }}">{{ eleve.fullName }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {# Actions #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-2">
+                            <i class="bi bi-sliders text-primary me-1"></i>Actions
+                        </h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-outline-danger btn-sm"
+                                    data-action="impacts#toggleDeleteMode"
+                                    data-impacts-target="modeToggle">
+                                <i class="bi bi-eraser me-1"></i>Mode suppression
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm"
+                                    data-action="impacts#undoLast">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Annuler le dernier
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    data-action="impacts#clearAll">
+                                <i class="bi bi-x-circle me-1"></i>Tout effacer
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm"
+                                    data-action="impacts#print">
+                                <i class="bi bi-printer me-1"></i>Imprimer
+                            </button>
+                            <button class="btn btn-sm"
+                                    style="background:#0f9e8e;color:white;border:none;"
+                                    data-action="impacts#save">
+                                <i class="bi bi-floppy me-1"></i>Sauvegarder
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    data-action="impacts#loadSaved">
+                                <i class="bi bi-folder2-open me-1"></i>Charger
+                            </button>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">
+                            En mode suppression, cliquez sur un point pour le retirer.
+                        </p>
+                    </div>
+                </div>
+
+                {# Stats #}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-2">
+                            <i class="bi bi-bar-chart-fill text-primary me-1"></i>Statistiques
+                        </h6>
+                        <div data-impacts-target="statsList">
+                            <p class="text-muted small mb-0">Aucun impact enregistré.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {# ── Mode tablette (overlay plein écran) ───────────────────────────── #}
+    <div data-impacts-target="tabletOverlay"
+         style="display:none;position:fixed;inset:0;z-index:1060;background:#111;flex-direction:column;overflow:hidden;">
+
+        {# Barre du haut #}
+        <div style="background:#1a2b3a;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
+
+            {# Sport #}
+            <div class="d-flex gap-1">
+                <button class="btn btn-sm"
+                        style="padding:4px 10px;font-size:.8rem;"
+                        data-action="impacts#setSport" data-sport="badminton"
+                        data-impacts-target="sportBtn tabletSportBtn">
+                    🏸
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        style="padding:4px 10px;font-size:.8rem;"
+                        data-action="impacts#setSport" data-sport="tennis"
+                        data-impacts-target="sportBtn tabletSportBtn">
+                    🎾
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        style="padding:4px 10px;font-size:.8rem;"
+                        data-action="impacts#setSport" data-sport="pingpong"
+                        data-impacts-target="sportBtn tabletSportBtn">
+                    🏓
+                </button>
+            </div>
+
+            {# Séparateur #}
+            <div style="width:1px;height:28px;background:rgba(255,255,255,.2);"></div>
+
+            {# Élève observé #}
+            <select class="form-select form-select-sm"
+                    style="max-width:200px;background:#2a3c4a;color:white;border-color:#3a5060;font-size:.85rem;"
+                    data-impacts-target="tabletObserveSelect"
+                    data-action="change->impacts#tabletSelectEleve">
+                <option value="">— Élève observé —</option>
+                {% for eleve in classe.eleves %}
+                    <option value="{{ eleve.id }}">{{ eleve.fullName }}</option>
+                {% endfor %}
+            </select>
+
+            {# Observateur #}
+            <select class="form-select form-select-sm"
+                    style="max-width:180px;background:#2a3c4a;color:white;border-color:#3a5060;font-size:.85rem;"
+                    data-impacts-target="tabletObservateurSelect"
+                    data-action="change->impacts#tabletSelectObservateur">
+                <option value="">— Observateur —</option>
+                {% for eleve in classe.eleves %}
+                    <option value="{{ eleve.id }}">{{ eleve.fullName }}</option>
+                {% endfor %}
+            </select>
+
+            {# Séparateur #}
+            <div style="width:1px;height:28px;background:rgba(255,255,255,.2);"></div>
+
+            {# Actions rapides #}
+            <button class="btn btn-sm btn-outline-danger"
+                    style="font-size:.8rem;padding:4px 10px;"
+                    data-action="impacts#toggleDeleteMode"
+                    data-impacts-target="modeToggle tabletModeToggle"
+                    title="Mode suppression">
+                <i class="bi bi-eraser"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-warning"
+                    style="font-size:.8rem;padding:4px 10px;"
+                    data-action="impacts#undoLast"
+                    title="Annuler le dernier impact">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary"
+                    style="font-size:.8rem;padding:4px 10px;"
+                    data-action="impacts#clearAll"
+                    title="Tout effacer">
+                <i class="bi bi-x-circle"></i>
+            </button>
+
+            {# Compteur #}
+            <span data-impacts-target="tabletCounter"
+                  style="color:white;font-size:.85rem;font-weight:600;background:rgba(255,255,255,.1);padding:4px 10px;border-radius:20px;white-space:nowrap;">
+                0 impact(s)
+            </span>
+
+            <button class="btn btn-sm"
+                    style="background:#0f9e8e;color:white;border:none;padding:4px 10px;font-size:.8rem;"
+                    data-action="impacts#save"
+                    title="Sauvegarder">
+                <i class="bi bi-floppy"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-light"
+                    style="padding:4px 10px;font-size:.8rem;"
+                    data-action="impacts#loadSaved"
+                    title="Charger une sauvegarde">
+                <i class="bi bi-folder2-open"></i>
+            </button>
+
+            {# Quitter #}
+            <button class="btn btn-sm ms-auto"
+                    style="background:#e84020;color:white;border:none;padding:4px 12px;font-size:.85rem;"
+                    data-action="impacts#exitTabletMode">
+                <i class="bi bi-x-lg me-1"></i>Quitter
+            </button>
+        </div>
+
+        {# Zone terrain + stats côte à côte #}
+        <div style="flex:1;display:flex;overflow:hidden;">
+
+            {# Terrain centré #}
+            <div data-impacts-target="tabletCourtContainer"
+                 style="flex:1;display:flex;align-items:center;justify-content:center;padding:12px;overflow:hidden;">
+            </div>
+
+            {# Mini stats flottantes #}
+            <div data-impacts-target="tabletStats"
+                 style="width:220px;background:#1a2b3a;padding:14px 12px;overflow-y:auto;flex-shrink:0;border-left:1px solid rgba(255,255,255,.08);">
+                <div style="color:rgba(255,255,255,.5);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Statistiques</div>
+                <div data-impacts-target="tabletStatsList"
+                     style="color:white;font-size:.82rem;">
+                    <p style="color:rgba(255,255,255,.4);font-size:.8rem;margin:0;">Aucun impact.</p>
+                </div>
+            </div>
+        </div>
+
+        {# Aide bas de page #}
+        <div style="background:#1a2b3a;padding:5px 12px;font-size:.75rem;color:rgba(255,255,255,.35);text-align:center;flex-shrink:0;">
+            <i class="bi bi-hand-index me-1"></i>Tapez sur le terrain pour marquer un impact · Mode suppression : tapez sur un point pour le retirer
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
