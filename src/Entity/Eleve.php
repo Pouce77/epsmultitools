@@ -31,7 +31,7 @@ class Eleve
 
     #[ORM\Column(type: 'smallint', nullable: true)]
     #[Assert\Range(min: 1, max: 5)]
-    private ?int $niveau = null;
+    private ?int $niveau = 3;
 
     #[ORM\Column(nullable: true)]
     private ?float $vma = null;

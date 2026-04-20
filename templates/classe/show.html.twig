@@ -107,6 +107,7 @@
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th class="text-center">Sexe</th>
+                        <th class="text-center">Niveau</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -124,6 +125,9 @@
                             {% else %}
                                 <span class="text-muted">—</span>
                             {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border">{{ eleve.niveau ?? 3 }}</span>
                         </td>
                         <td class="text-end pe-3">
                             <a href="{{ path('app_eleve_edit', {classeId: classe.id, id: eleve.id}) }}" class="btn btn-sm btn-outline-secondary me-1">

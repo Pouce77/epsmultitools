@@ -621,18 +621,22 @@ export default class extends Controller {
                 <strong>🥊 Enregistrer un défi</strong>
             </div>
             <div class="card-body p-3">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <select class="form-select form-select-sm js-p1" style="width:auto;min-width:150px"></select>
-                    <input type="number" class="form-control form-control-sm text-center js-s1"
-                           style="width:62px" min="0" placeholder="0">
-                    <span class="fw-bold text-muted px-1">—</span>
-                    <input type="number" class="form-control form-control-sm text-center js-s2"
-                           style="width:62px" min="0" placeholder="0">
-                    <select class="form-select form-select-sm js-p2" style="width:auto;min-width:150px"></select>
-                    <button class="btn btn-primary btn-sm js-submit">
-                        <i class="bi bi-check-lg me-1"></i>Valider
-                    </button>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="flex-grow-1 d-flex flex-column gap-1 min-w-0">
+                        <select class="form-select form-select-sm js-p1 w-100"></select>
+                        <input type="number" class="form-control form-control-sm text-center js-s1"
+                               min="0" placeholder="0">
+                    </div>
+                    <span class="fw-bold text-muted flex-shrink-0">—</span>
+                    <div class="flex-grow-1 d-flex flex-column gap-1 min-w-0">
+                        <select class="form-select form-select-sm js-p2 w-100"></select>
+                        <input type="number" class="form-control form-control-sm text-center js-s2"
+                               min="0" placeholder="0">
+                    </div>
                 </div>
+                <button class="btn btn-primary btn-sm w-100 js-submit">
+                    <i class="bi bi-check-lg me-1"></i>Valider
+                </button>
                 <div class="small text-muted mt-2 js-preview"></div>
             </div>
         `

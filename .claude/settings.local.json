@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(composer show:*)"
+      "Bash(composer show:*)",
+      "Read(//c/Users/julie/Desktop/Sites/**)",
+      "Bash(npm -v)",
+      "Bash(npx create-expo-app@latest epsmultitools-app --template blank-typescript)",
+      "Bash(npm install *)",
+      "Bash(composer require *)",
+      "Bash(php bin/console lexik:jwt:generate-keypair)",
+      "Bash(php bin/console debug:router --env=dev)",
+      "Bash(npx expo *)"
     ]
   }
 }

@@ -44,6 +44,7 @@ class EleveType extends AbstractType
                 'label' => 'Niveau EPS (optionnel)',
                 'required' => false,
                 'placeholder' => '-- Non renseigné --',
+                'empty_data' => 3,
                 'attr' => ['class' => 'form-select'],
                 'choices' => [
                     '1 — Faible'    => 1,

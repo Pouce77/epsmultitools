@@ -13,6 +13,17 @@ security:
         dev:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+        api:
+            pattern: ^/api
+            stateless: true
+            provider: app_user_provider
+            json_login:
+                check_path: api_login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            jwt: ~
         main:
             lazy: true
             provider: app_user_provider
@@ -31,6 +42,8 @@ security:
                 lifetime: 604800
 
     access_control:
+        - { path: ^/api/login,          roles: PUBLIC_ACCESS }
+        - { path: ^/api,                roles: ROLE_USER }
         - { path: ^/login,              roles: PUBLIC_ACCESS }
         - { path: ^/register,           roles: PUBLIC_ACCESS }
         - { path: ^/$,                  roles: PUBLIC_ACCESS }
