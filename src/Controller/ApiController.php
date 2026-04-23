@@ -154,4 +154,28 @@ class ApiController extends AbstractController
         ]);
     }
 
+    /**
+     * DELETE /api/eleves/{id}
+     * Supprime un élève appartenant à l'enseignant connecté.
+     */
+    #[Route('/eleves/{id}', name: 'eleve_delete', methods: ['DELETE'])]
+    public function deleteEleve(
+        int $id,
+        EleveRepository $eleveRepo,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        /** @var \App\Entity\User $user */
+        $user  = $this->getUser();
+        $eleve = $eleveRepo->find($id);
+
+        if (!$eleve || $eleve->getClasse()->getEnseignant() !== $user) {
+            return $this->json(['error' => 'Élève introuvable.'], 404);
+        }
+
+        $em->remove($eleve);
+        $em->flush();
+
+        return $this->json(['message' => 'Élève supprimé.']);
+    }
+
 }
