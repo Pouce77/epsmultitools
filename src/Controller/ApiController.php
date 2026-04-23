@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Eleve;
 use App\Repository\ClasseRepository;
 use App\Repository\EleveRepository;
 use App\Repository\ResultatOutilRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -58,6 +60,53 @@ class ApiController extends AbstractController
             'classes'   => $classesData,
             'resultats' => $resultatsData,
         ]);
+    }
+
+    /**
+     * POST /api/eleves
+     * Crée un nouvel élève dans une classe de l'enseignant connecté.
+     */
+    #[Route('/eleves', name: 'eleve_create', methods: ['POST'])]
+    public function createEleve(
+        Request $request,
+        ClasseRepository $classeRepo,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $body = json_decode($request->getContent(), true) ?? [];
+
+        if (empty($body['classeId']) || empty($body['prenom']) || empty($body['nom'])) {
+            return $this->json(['error' => 'classeId, prenom et nom sont requis.'], 400);
+        }
+
+        $classe = $classeRepo->findOneByIdAndEnseignant((int) $body['classeId'], $user);
+        if (!$classe) {
+            return $this->json(['error' => 'Classe introuvable.'], 403);
+        }
+
+        $genre  = in_array($body['genre'] ?? '', ['M', 'F'], true) ? $body['genre'] : 'M';
+        $niveau = (isset($body['niveau']) && is_int($body['niveau']) && $body['niveau'] >= 1 && $body['niveau'] <= 5)
+            ? $body['niveau'] : 3;
+
+        $eleve = (new Eleve())
+            ->setPrenom(trim($body['prenom']))
+            ->setNom(trim($body['nom']))
+            ->setSexe($genre)
+            ->setNiveau($niveau)
+            ->setClasse($classe);
+
+        $em->persist($eleve);
+        $em->flush();
+
+        return $this->json([
+            'id'     => $eleve->getId(),
+            'prenom' => $eleve->getPrenom(),
+            'nom'    => $eleve->getNom(),
+            'genre'  => $eleve->getSexe(),
+            'niveau' => $eleve->getNiveau() ?? 3,
+            'vma'    => $eleve->getVma(),
+        ], 201);
     }
 
     /**
