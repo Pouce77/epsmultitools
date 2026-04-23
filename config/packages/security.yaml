@@ -14,7 +14,7 @@ security:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
         api:
-            pattern: ^/api
+            pattern: ^/api/login$
             stateless: true
             provider: app_user_provider
             json_login:
@@ -27,6 +27,8 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            entry_point: form_login
+            jwt: ~
             form_login:
                 login_path: app_login
                 check_path: app_login
