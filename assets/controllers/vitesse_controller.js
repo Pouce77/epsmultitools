@@ -498,6 +498,10 @@ export default class extends Controller {
                     vmaKmh, avgKmh: Math.round(avgKmh * 10) / 10,
                     vmaPercent: vmaPercent ? Math.round(vmaPercent * 10) / 10 : null,
                     contrat: vmaPercent !== null ? avgKmh >= vmaKmh * (vmaTargetPct / 100) : null,
+                    passages: passages.map(p => ({
+                        splitTime: Math.round(p.splitTime * 100) / 100,
+                        kmh: Math.round(p.kmh * 10) / 10,
+                    })),
                 }
             })
 
