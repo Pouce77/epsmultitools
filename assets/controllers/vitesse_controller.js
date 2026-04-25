@@ -321,24 +321,24 @@ export default class extends Controller {
             tbody.appendChild(row)
 
             if (passages.length > 0) {
+                const badges = passages.map((p, n) =>
+                    '<span class="badge bg-white border text-dark fw-normal" style="font-size:.75rem;">' +
+                    '<span class="text-muted me-1">P' + (n + 1) + '</span> ' +
+                    '<strong>' + this.formatTime(p.splitTime) + '</strong> ' +
+                    '<span class="text-primary ms-1">' + p.kmh.toFixed(1) + ' km/h</span>' +
+                    '</span>'
+                ).join('')
                 const detailRow = document.createElement('tr')
                 detailRow.style.background = '#f8f9fa'
-                detailRow.innerHTML = `
-                    <td colspan="8" class="py-1 px-3">
-                        <div class="d-flex flex-wrap gap-2 align-items-center">
-                            <small class="text-muted fw-semibold me-1">Temps :</small>
-                            ${passages.map((p, n) => `
-                                <span class="badge bg-white border text-dark fw-normal" style="font-size:.75rem;">
-                                    <span class="text-muted me-1">P${n + 1}</span>
-                                    <strong>${this.formatTime(p.splitTime)}</strong>
-                                    <span class="text-primary ms-1">${p.kmh.toFixed(1)} km/h</span>
-                                </span>
-                            `).join('')}
-                        </div>
-                    </td>
-                `
+                detailRow.innerHTML =
+                    '<td colspan="8" class="py-1 px-3">' +
+                    '<div class="d-flex flex-wrap gap-2 align-items-center">' +
+                    '<small class="text-muted fw-semibold me-1">Temps :</small>' +
+                    badges +
+                    '</div></td>'
                 tbody.appendChild(detailRow)
             }
+        })
         this._renderChart()
     }
 
