@@ -4,7 +4,8 @@
 
 {% block tool_body %}
 <div data-controller="equipes"
-     data-equipes-eleves-value="{{ elevesJson }}">
+     data-equipes-eleves-value="{{ elevesJson }}"
+     data-equipes-classe-id-value="{{ classe.id }}">
 
     {# Student selection panel #}
     <div class="card border-0 shadow-sm mb-3" style="border-left: 3px solid #0f9e8e !important;">
@@ -70,6 +71,9 @@
                     </button>
                     <button class="btn btn-outline-success btn-sm" data-action="equipes#print">
                         <i class="bi bi-printer me-1"></i>Imprimer
+                    </button>
+                    <button class="btn btn-success btn-sm" data-action="equipes#save">
+                        <i class="bi bi-cloud-upload-fill me-1"></i>Sauvegarder
                     </button>
                 </div>
             </div>

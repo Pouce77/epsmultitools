@@ -345,6 +345,46 @@
                         {% endif %}
                     {% endif %}
 
+                {# ── Équipes ─────────────────────────── #}
+                {% elseif resultat.outil == 'equipes' %}
+                    {% set d = resultat.data %}
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-people me-1"></i>
+                        {{ d.nbEquipes }} équipe(s) · {{ d.equipes|map(e => e.eleves|length)|reduce((a, b) => a + b, 0) }} élève(s)
+                    </p>
+                    {% set colors = ['primary', 'danger', 'success', 'warning', 'info', 'dark', 'secondary'] %}
+                    <div class="row g-2">
+                        {% for i, equipe in d.equipes %}
+                            {% set color = colors[i % colors|length] %}
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <div class="card border-0 shadow-sm h-100" style="border-top: 3px solid var(--bs-{{ color }}) !important;">
+                                    <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+                                        <span class="fw-bold text-{{ color }} small">{{ equipe.nom }}</span>
+                                        <span class="text-muted" style="font-size:.75rem;">{{ equipe.eleves|length }} élèves</span>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        {% for eleve in equipe.eleves %}
+                                            <div class="d-flex align-items-center gap-1 p-1 rounded bg-light mb-1">
+                                                {% if eleve.sexe == 'M' %}
+                                                    <span class="text-info" style="font-size:.8rem;">♂</span>
+                                                {% elseif eleve.sexe == 'F' %}
+                                                    <span class="text-danger" style="font-size:.8rem;">♀</span>
+                                                {% else %}
+                                                    <span style="font-size:.8rem;"> </span>
+                                                {% endif %}
+                                                <span class="small fw-semibold flex-grow-1">{{ eleve.fullName }}</span>
+                                                {% if eleve.niveau %}
+                                                    {% set nColors = {1: 'danger', 2: 'warning', 3: 'info', 4: 'primary', 5: 'success'} %}
+                                                    <span class="badge rounded-pill bg-{{ nColors[eleve.niveau] ?? 'secondary' }}" style="font-size:.65rem;">{{ eleve.niveau }}</span>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
                 {# ── Autres ──────────────────────────── #}
                 {% else %}
                     <p class="text-muted small fst-italic">Affichage non disponible pour cet outil.</p>

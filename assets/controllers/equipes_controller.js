@@ -1,9 +1,9 @@
 import { Controller } from '@hotwired/stimulus'
-import { showAlert } from '../utils/dialog.js'
+import { showAlert, showSaveDialog } from '../utils/dialog.js'
 
 export default class extends Controller {
     static targets = ['nbEquipesInput', 'mixiteInput', 'niveauInput', 'equipesDisplay', 'infoText', 'infoContent', 'swapHint', 'eleveSelectList', 'selectCounter']
-    static values = { eleves: Array }
+    static values = { eleves: Array, classeId: Number }
 
     connect() {
         this.teams = []
@@ -292,6 +292,50 @@ export default class extends Controller {
             this.teams[ti][ei] = temp
             this.selected = null
             this.render()
+        }
+    }
+
+    // ── Save ─────────────────────────────────────────────────────────────
+
+    async save() {
+        if (this.teams.length === 0) {
+            await showAlert('Générez des équipes avant de sauvegarder.', { title: 'Équipes requises', type: 'info' })
+            return
+        }
+
+        const label = await showSaveDialog()
+        if (label === null) return
+
+        const payload = {
+            outil:    'equipes',
+            classeId: this.classeIdValue,
+            label:    label || null,
+            data: {
+                savedAt:  new Date().toISOString(),
+                nbEquipes: this.teams.length,
+                equipes:  this.teams.map((team, i) => ({
+                    nom:    `Équipe ${i + 1}`,
+                    eleves: team.map(e => ({
+                        id:       e.id,
+                        fullName: e.fullName,
+                        sexe:     e.sexe,
+                        niveau:   e.niveau,
+                    })),
+                })),
+            },
+        }
+
+        try {
+            const res = await fetch('/api/resultats', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload),
+            })
+            if (!res.ok) throw new Error()
+            await showAlert('Équipes sauvegardées avec succès.', { type: 'success', title: 'Sauvegarde réussie' })
+        } catch {
+            await showAlert('Une erreur est survenue lors de la sauvegarde.', { type: 'error', title: 'Erreur' })
         }
     }
 
