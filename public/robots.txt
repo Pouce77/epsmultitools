@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /outils/
+Disallow: /classe/
+Disallow: /eleve/
+Disallow: /resultats/
+Disallow: /compte/
+Disallow: /profil/
+
+Sitemap: https://epsmultitools.jkwebcreation.fr/sitemap.xml

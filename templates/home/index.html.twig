@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}EPS Multi-Tools — Outils numériques pour enseignants d'EPS{% endblock %}
+{% block meta_description %}Plateforme gratuite pour enseignants d'EPS du second degré. Gérez vos classes et animez vos cours avec des outils interactifs : compteur de vitesse, tableau de scores, organisation de tournoi, équipes équilibrées, compteur d'actions et marqueur d'impacts.{% endblock %}
+{% block og_title %}EPS Multi-Tools — Outils numériques pour enseignants d'EPS{% endblock %}
+{% block og_description %}Plateforme gratuite pour enseignants d'EPS : compteur de vitesse, scores, tournois, équipes équilibrées. Gérez vos classes et élèves en quelques clics.{% endblock %}
 
 {% block main_class %}{% endblock %}
 
@@ -151,5 +154,38 @@
 {# ── Modals aperçu ──────────────────────────────────────────── #}
 {% include '_tool_modals.html.twig' %}
 
+{% block javascripts %}
+{{ parent() }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "EPS Multi-Tools",
+  "url": "{{ app.request.schemeAndHttpHost }}",
+  "description": "Plateforme gratuite d'outils numériques pour les enseignants d'EPS du second degré.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "inLanguage": "fr",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  },
+  "audience": {
+    "@type": "EducationalAudience",
+    "educationalRole": "teacher"
+  },
+  "featureList": [
+    "Compteur de vitesse",
+    "Tableau de scores",
+    "Organisation de tournoi",
+    "Équipes équilibrées",
+    "Compteur d'actions",
+    "Marqueur d'impacts"
+  ]
+}
+</script>
+{% endblock %}
 
 {% endblock %}

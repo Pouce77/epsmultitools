@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}EPS Multi-Tools{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}EPS Multi-Tools — Outils numériques gratuits pour enseignants d'EPS du second degré : compteur de vitesse, tableau de scores, tournoi, équipes équilibrées et plus.{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+    <link rel="canonical" href="{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}">
+
+    {# Open Graph #}
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="EPS Multi-Tools">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:title" content="{% block og_title %}EPS Multi-Tools{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Outils numériques gratuits pour enseignants d'EPS : compteur de vitesse, scores, tournois, équipes équilibrées.{% endblock %}">
+    <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ app.request.pathInfo }}">
+    <meta property="og:image" content="{{ app.request.schemeAndHttpHost }}{{ asset('images/logo.png') }}">
+
+    {# Twitter Card #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}EPS Multi-Tools{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Outils numériques gratuits pour enseignants d'EPS.{% endblock %}">
+    <meta name="twitter:image" content="{{ app.request.schemeAndHttpHost }}{{ asset('images/logo.png') }}">
+
     <link rel="icon" href="{{ asset('images/logo.png') }}">
 
     {# Bootstrap 5 — preconnect pour réduire la latence CDN #}
