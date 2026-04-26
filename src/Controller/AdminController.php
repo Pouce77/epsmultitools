@@ -439,6 +439,23 @@ class AdminController extends AbstractController
         return $this->render('admin/feedbacks.html.twig', ['feedbacks' => $feedbacks]);
     }
 
+    // ── Supprimer un feedback ─────────────────────────────────────────────
+
+    #[Route('/feedbacks/{id}/delete', name: 'feedback_delete', methods: ['POST'])]
+    public function feedbackDelete(\App\Entity\UserFeedback $feedback, EntityManagerInterface $em, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('delete-feedback-' . $feedback->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_feedbacks');
+        }
+
+        $em->remove($feedback);
+        $em->flush();
+
+        $this->addFlash('success', 'Feedback supprimé.');
+        return $this->redirectToRoute('admin_feedbacks');
+    }
+
     // ── Import CSV ─────────────────────────────────────────────────────────
 
     #[Route('/import-csv', name: 'import_csv', methods: ['GET'])]
