@@ -55,6 +55,8 @@ security:
         - { path: ^/contact,                       roles: PUBLIC_ACCESS }
         - { path: ^/mot-de-passe-oublie,           roles: PUBLIC_ACCESS }
         - { path: ^/reinitialiser-mot-de-passe,    roles: PUBLIC_ACCESS }
+        - { path: ^/sitemap\.xml,                  roles: PUBLIC_ACCESS }
+        - { path: ^/robots\.txt,                   roles: PUBLIC_ACCESS }
         - { path: ^/,                   roles: ROLE_USER }
 
 when@test:
