@@ -44,6 +44,7 @@ security:
                 lifetime: 604800
 
     access_control:
+        - { path: ^/admin,              roles: ROLE_ADMIN }
         - { path: ^/api/login,          roles: PUBLIC_ACCESS }
         - { path: ^/api,                roles: ROLE_USER }
         - { path: ^/login,              roles: PUBLIC_ACCESS }

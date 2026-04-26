@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+{% block title %}Suppression de compte — EPS Multi-Tools{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width:520px;">
+    <div class="text-center mb-4">
+        <a href="{{ path('app_home') }}" class="text-decoration-none">
+            <span class="fw-bold fs-5 text-primary">⚡ EPS Multi-Tools</span>
+        </a>
+    </div>
+
+    {% if deleted %}
+        <div class="card border-0 shadow-sm text-center p-4">
+            <div class="mb-3" style="font-size:3rem;">✅</div>
+            <h5 class="fw-bold mb-2">Compte supprimé</h5>
+            <p class="text-muted mb-4">
+                Votre compte et toutes vos données ont été supprimés définitivement.<br>
+                Merci d'avoir utilisé EPS Multi-Tools.
+            </p>
+            <a href="{{ path('app_home') }}" class="btn btn-outline-secondary btn-sm">Retour à l'accueil</a>
+        </div>
+
+    {% elseif not valid %}
+        <div class="card border-0 shadow-sm text-center p-4">
+            <div class="mb-3" style="font-size:3rem;">❌</div>
+            <h5 class="fw-bold mb-2">Lien invalide</h5>
+            <p class="text-muted mb-4">
+                Ce lien est invalide ou a déjà été utilisé.<br>
+                Si votre compte existe encore, connectez-vous pour le gérer.
+            </p>
+            <a href="{{ path('app_home') }}" class="btn btn-outline-secondary btn-sm">Retour à l'accueil</a>
+        </div>
+
+    {% else %}
+        <div class="card border-0 shadow-sm p-4">
+            <div class="text-center mb-3" style="font-size:3rem;">⚠️</div>
+            <h5 class="fw-bold text-center mb-3">Supprimer mon compte</h5>
+            <div class="alert alert-danger py-2 small mb-4">
+                <strong>Action irréversible.</strong> Toutes vos classes, élèves et résultats seront supprimés définitivement.
+            </div>
+            <p class="text-muted small mb-4">
+                Connecté(e) en tant que <strong>{{ user.fullName }}</strong> ({{ user.email }}).
+            </p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{{ path('app_home') }}" class="btn btn-outline-secondary">
+                    Annuler — conserver mon compte
+                </a>
+                <form method="post" action="{{ path('account_delete', {id: user.id, token: token}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-account-' ~ user.id) }}">
+                    <button type="submit" class="btn btn-danger">Supprimer définitivement</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

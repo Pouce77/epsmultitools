@@ -1,0 +1,246 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Admin — {{ user.fullName }}{% endblock %}
+
+{% block admin_body %}
+
+{# ── Breadcrumb + Actions ──────────────────────────────────────────────── #}
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a href="{{ path('admin_users') }}">Utilisateurs</a></li>
+            <li class="breadcrumb-item active">{{ user.fullName }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex gap-2">
+        {% if user != app.user %}
+            <form method="post" action="{{ path('admin_user_toggle_admin', {id: user.id}) }}">
+                <button type="submit"
+                        class="btn btn-sm {{ 'ROLE_ADMIN' in user.roles ? 'btn-danger' : 'btn-outline-warning' }}">
+                    <i class="bi bi-shield{{ 'ROLE_ADMIN' in user.roles ? '-fill' : '' }} me-1"></i>
+                    {{ 'ROLE_ADMIN' in user.roles ? 'Rétrograder' : 'Promouvoir admin' }}
+                </button>
+            </form>
+            <button type="button" class="btn btn-sm btn-outline-danger"
+                    data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                <i class="bi bi-trash me-1"></i>Supprimer
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Profile card ──────────────────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3 px-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:56px;height:56px;">
+                <span class="fw-bold text-primary fs-4">{{ user.prenom|first|upper }}</span>
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h5 class="mb-0 fw-bold">{{ user.fullName }}</h5>
+                    {% if 'ROLE_ADMIN' in user.roles %}
+                        <span class="badge bg-danger">Admin</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark border">User</span>
+                    {% endif %}
+                    {% if user.newsletterOptOut %}
+                        <span class="badge bg-secondary"><i class="bi bi-bell-slash me-1"></i>Newsletter off</span>
+                    {% endif %}
+                </div>
+                <div class="text-muted small mt-1">
+                    <i class="bi bi-envelope me-1"></i>{{ user.email }}
+                    {% if user.etablissement %}
+                        <span class="mx-2">·</span>
+                        <i class="bi bi-building me-1"></i>{{ user.etablissement }}
+                    {% endif %}
+                    <span class="mx-2">·</span>
+                    <i class="bi bi-calendar3 me-1"></i>Inscrit le {{ user.createdAt|date('d/m/Y') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Stat cards ────────────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-primary">{{ user.classes|length }}</div>
+                <div class="small text-muted"><i class="bi bi-collection me-1"></i>Classes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-success">{{ nbEleves }}</div>
+                <div class="small text-muted"><i class="bi bi-people me-1"></i>Élèves</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-warning">{{ nbResultats }}</div>
+                <div class="small text-muted"><i class="bi bi-bar-chart me-1"></i>Résultats sauvegardés</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center py-3">
+                {% if derniereActivite %}
+                    <div class="fs-6 fw-bold text-info">{{ derniereActivite|date('d/m/Y') }}</div>
+                    <div class="text-muted" style="font-size:.7rem;">{{ derniereActivite|date('H:i') }}</div>
+                {% else %}
+                    <div class="fs-6 fw-bold text-muted">—</div>
+                {% endif %}
+                <div class="small text-muted mt-1"><i class="bi bi-clock-history me-1"></i>Dernière activité</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    {# ── Tools usage ───────────────────────────────────────────────────── #}
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-2 px-3">
+                <span class="fw-semibold small"><i class="bi bi-tools text-primary me-2"></i>Outils utilisés</span>
+            </div>
+            <div class="card-body py-2 px-3">
+                {% if parOutil is empty %}
+                    <p class="text-muted small mb-0">Aucun résultat enregistré.</p>
+                {% else %}
+                    {% set maxVal = parOutil|first %}
+                    {% for outil, nb in parOutil %}
+                        {% set pct = maxVal > 0 ? (nb / maxVal * 100)|round : 0 %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>
+                                    {{ outil == 'vitesse'  ? '⏱️ Vitesse – Demi-fond'   :
+                                       outil == 'actions'  ? '📊 Compteur d\'actions'    :
+                                       outil == 'scores'   ? '🏆 Tableau de scores'      :
+                                       outil == 'tournoi'  ? '🎯 Tournoi'                :
+                                       outil == 'equipes'  ? '⚖️ Équipes équilibrées'    :
+                                       outil == 'impacts'  ? '🎾 Marqueur d\'impacts'    :
+                                       outil|capitalize }}
+                                </span>
+                                <span class="text-muted">{{ nb }}</span>
+                            </div>
+                            <div class="progress" style="height:6px;">
+                                <div class="progress-bar bg-primary" style="width:{{ pct }}%"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Classes ───────────────────────────────────────────────────────── #}
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-2 px-3">
+                <span class="fw-semibold small"><i class="bi bi-collection text-success me-2"></i>Classes</span>
+            </div>
+            {% if user.classes is empty %}
+                <div class="card-body py-2 px-3">
+                    <p class="text-muted small mb-0">Aucune classe créée.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Classe</th>
+                                <th>Niveau</th>
+                                <th>Année</th>
+                                <th class="text-center">Élèves</th>
+                                <th>Créée le</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for classe in user.classes %}
+                            <tr>
+                                <td class="ps-3 fw-semibold small">{{ classe.nom }}</td>
+                                <td class="small text-muted">{{ classe.niveau ?? '—' }}</td>
+                                <td class="small text-muted">{{ classe.anneeScolaire }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">{{ classe.effectif }}</span>
+                                </td>
+                                <td class="small text-muted">{{ classe.createdAt|date('d/m/Y') }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{# ── Recent results ────────────────────────────────────────────────────── #}
+{% if resultats is not empty %}
+<div class="card border-0 shadow-sm mt-3">
+    <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small"><i class="bi bi-clock-history text-warning me-2"></i>Résultats récents</span>
+        {% if nbResultats > 25 %}
+            <span class="badge bg-secondary">{{ nbResultats }} au total — 25 affichés</span>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Outil</th>
+                    <th>Classe</th>
+                    <th>Label</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in resultats %}
+                <tr>
+                    <td class="ps-3 small">{{ r.outilIcon }} {{ r.outilLabel }}</td>
+                    <td class="small text-muted">{{ r.classe.nom }}</td>
+                    <td class="small text-muted">{{ r.label ?? '—' }}</td>
+                    <td class="small text-muted">{{ r.createdAt|date('d/m/Y H:i') }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{# ── Delete modal ──────────────────────────────────────────────────────── #}
+{% if user != app.user %}
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Supprimer l'utilisateur</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small">
+                Supprimer <strong>{{ user.fullName }}</strong> ({{ user.email }}) ?
+                <div class="text-danger mt-1">Toutes ses classes et résultats seront supprimés.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

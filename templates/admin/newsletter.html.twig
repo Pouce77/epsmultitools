@@ -1,0 +1,67 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Newsletter{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-envelope text-primary me-2"></i>Newsletter</h4>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+                <h6 class="fw-bold mb-0"><i class="bi bi-send text-primary me-2"></i>Composer un email</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form method="post" action="{{ path('admin_newsletter_send') }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Destinataires</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="cible" id="cible_tous" value="tous" checked>
+                                <label class="form-check-label small" for="cible_tous">Tous les utilisateurs</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="cible" id="cible_actifs" value="actifs">
+                                <label class="form-check-label small" for="cible_actifs">Utilisateurs actifs uniquement</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sujet" class="form-label fw-semibold small">Sujet <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-sm" id="sujet" name="sujet" required maxlength="200" placeholder="Sujet de l'email…">
+                    </div>
+                    <div class="mb-4">
+                        <label for="corps" class="form-label fw-semibold small">Corps du message <span class="text-danger">*</span></label>
+                        <textarea class="form-control form-control-sm font-monospace" id="corps" name="corps" rows="12" required placeholder="Contenu HTML ou texte…"></textarea>
+                        <div class="form-text">Vous pouvez utiliser du HTML basique (&lt;b&gt;, &lt;a href="…"&gt;, &lt;br&gt;, etc.).</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-send me-1"></i>Envoyer
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary btn-sm">Effacer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+                <h6 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informations</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>L'email est envoyé individuellement à chaque destinataire.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Le prénom de l'utilisateur est ajouté automatiquement en en-tête.</li>
+                    <li class="mb-2"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Les utilisateurs inactifs (90 jours) peuvent être exclus avec l'option "actifs uniquement".</li>
+                    <li class="mb-2"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Vérifiez votre message avant envoi — l'opération n'est pas réversible.</li>
+                    <li><i class="bi bi-info-circle-fill text-info me-2"></i>L'expéditeur est l'adresse configurée dans les paramètres du serveur.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

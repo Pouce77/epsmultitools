@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votre compte EPS Multi-Tools va être supprimé</title>
+    <style>
+        body { margin: 0; padding: 0; background: #f4f6f8; font-family: Arial, Helvetica, sans-serif; color: #222; }
+        .wrapper { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        .header { background: #e84020; padding: 28px 32px; }
+        .header h1 { margin: 0; color: #fff; font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+        .header p { margin: 4px 0 0; color: rgba(255,255,255,.8); font-size: 13px; }
+        .body { padding: 32px; }
+        .body p { margin: 0 0 16px; line-height: 1.6; font-size: 15px; }
+        .alert { background: #fff3f0; border: 1px solid #f5c6bb; border-radius: 6px; padding: 16px 20px; margin-bottom: 24px; }
+        .alert p { margin: 0; font-size: 14px; color: #c0392b; }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 6px; font-size: 15px; font-weight: 700; text-decoration: none; margin-bottom: 8px; }
+        .btn-primary { background: #0f9e8e; color: #fff; }
+        .btn-danger  { background: #e84020; color: #fff; }
+        .footer { background: #f4f6f8; padding: 20px 32px; text-align: center; }
+        .footer p { margin: 0; font-size: 12px; color: #888; line-height: 1.5; }
+        .footer a { color: #0f9e8e; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <h1>⚡ EPS Multi-Tools</h1>
+            <p>Avertissement de suppression de compte</p>
+        </div>
+        <div class="body">
+            <p>Bonjour <strong>{{ user.prenom }}</strong>,</p>
+
+            <div class="alert">
+                <p>⚠️ <strong>Votre compte sera supprimé dans 30 jours</strong> car il est inactif depuis plus de 6 mois.</p>
+            </div>
+
+            <p>
+                Pour conserver votre compte, il vous suffit de vous connecter et d'utiliser l'application
+                avant l'expiration du délai.
+            </p>
+
+            <p style="text-align:center;margin: 28px 0;">
+                <a href="{{ loginUrl }}" class="btn btn-primary">Me connecter et conserver mon compte</a>
+            </p>
+
+            <p style="font-size:14px;color:#666;border-top:1px solid #eee;padding-top:16px;">
+                Si vous ne souhaitez plus utiliser EPS Multi-Tools, vous pouvez supprimer votre compte
+                immédiatement en cliquant sur le bouton ci-dessous. <strong>Cette action est irréversible.</strong>
+            </p>
+
+            <p style="text-align:center;margin: 16px 0 0;">
+                <a href="{{ deleteUrl }}" class="btn btn-danger">Supprimer mon compte maintenant</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>© {{ "now"|date("Y") }} EPS Multi-Tools</p>
+            <p style="margin-top:6px;font-size:11px;color:#aaa;">
+                Cet email a été envoyé automatiquement suite à l'inactivité de votre compte.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

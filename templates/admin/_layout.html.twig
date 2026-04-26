@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container-fluid py-3">
+    <div class="row g-3">
+
+        {# Sidebar #}
+        <div class="col-lg-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white py-2 px-3">
+                    <span class="fw-bold small"><i class="bi bi-shield-fill me-1"></i>Administration</span>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ path('admin_dashboard') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                        <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+                    </a>
+                    <a href="{{ path('admin_users') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') starts with 'admin_user' ? 'active' : '' }}">
+                        <i class="bi bi-people me-2"></i>Utilisateurs
+                    </a>
+                    <a href="{{ path('admin_newsletter') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') starts with 'admin_newsletter' ? 'active' : '' }}">
+                        <i class="bi bi-envelope me-2"></i>Newsletter
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Main content #}
+        <div class="col-lg-10">
+            {% for type, messages in app.flashes(['success', 'danger', 'warning', 'info']) %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type }} alert-dismissible fade show py-2 mb-3">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            {% block admin_body %}{% endblock %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

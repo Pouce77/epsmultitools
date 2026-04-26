@@ -9,7 +9,10 @@
       "Bash(composer require *)",
       "Bash(php bin/console lexik:jwt:generate-keypair)",
       "Bash(php bin/console debug:router --env=dev)",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(php bin/console cache:clear)",
+      "Bash(php bin/console doctrine:migrations:status)",
+      "Bash(php -l \"c:/Users/julie/Desktop/Sites/epsmultitools/src/Controller/AdminController.php\")"
     ]
   }
 }

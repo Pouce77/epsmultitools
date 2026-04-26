@@ -1,0 +1,205 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Utilisateurs{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h4 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Utilisateurs <span class="badge bg-secondary ms-1">{{ users|length }}</span></h4>
+    <a href="{{ path('admin_users_export_csv') }}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-filetype-csv me-1"></i>Exporter CSV
+    </a>
+</div>
+
+{# ── Comptes à supprimer (avertis depuis 30+ jours) ───────────────── #}
+{% if aSupprimer is not empty %}
+<div class="card border-0 shadow-sm mb-3 border-start border-danger border-4">
+    <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-danger">
+            <i class="bi bi-trash-fill me-1"></i>Suppression imminente — avertis il y a 30+ jours ({{ aSupprimer|length }})
+        </span>
+        <button class="btn btn-sm btn-outline-secondary py-0" type="button" data-bs-toggle="collapse" data-bs-target="#aSupprimerBody">
+            Afficher / masquer
+        </button>
+    </div>
+    <div class="collapse show" id="aSupprimerBody">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nom</th><th>Email</th><th>Établissement</th>
+                            <th>Averti le</th><th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in aSupprimer %}
+                        <tr class="table-danger">
+                            <td class="fw-semibold small">{{ user.fullName }}</td>
+                            <td class="text-muted small">{{ user.email }}</td>
+                            <td class="small">{{ user.etablissement ?? '—' }}</td>
+                            <td class="small text-danger">{{ user.warningEmailSentAt|date('d/m/Y') }}</td>
+                            <td class="text-end pe-3">
+                                <button type="button" class="btn btn-sm btn-danger py-0"
+                                        data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}">
+                                    <i class="bi bi-trash me-1"></i>Supprimer
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Comptes à avertir (6 mois inactifs, pas encore avertis) ──────── #}
+{% if aAvertir is not empty %}
+<div class="card border-0 shadow-sm mb-3 border-start border-warning border-4">
+    <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-warning">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>Inactifs depuis 6 mois — à avertir ({{ aAvertir|length }})
+        </span>
+        <button class="btn btn-sm btn-outline-secondary py-0" type="button" data-bs-toggle="collapse" data-bs-target="#aAvertirBody">
+            Afficher / masquer
+        </button>
+    </div>
+    <div class="collapse" id="aAvertirBody">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nom</th><th>Email</th><th>Établissement</th>
+                            <th>Inscription</th><th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in aAvertir %}
+                        <tr>
+                            <td class="fw-semibold small">{{ user.fullName }}</td>
+                            <td class="text-muted small">{{ user.email }}</td>
+                            <td class="small">{{ user.etablissement ?? '—' }}</td>
+                            <td class="text-muted small">{{ user.createdAt|date('d/m/Y') }}</td>
+                            <td class="text-end pe-3">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <form method="post" action="{{ path('admin_user_send_warning', {id: user.id}) }}">
+                                        <button type="submit" class="btn btn-sm btn-warning py-0" title="Envoyer l'email d'avertissement">
+                                            <i class="bi bi-envelope-exclamation me-1"></i>Avertir
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0"
+                                            data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Liste complète ────────────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Établissement</th>
+                    <th class="text-center">Classes</th>
+                    <th class="text-center">Rôle</th>
+                    <th class="text-center">Newsletter</th>
+                    <th>Inscription</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td class="text-muted small">{{ user.id }}</td>
+                    <td class="fw-semibold">
+                        <a href="{{ path('admin_user_show', {id: user.id}) }}" class="text-decoration-none link-dark">{{ user.fullName }}</a>
+                    </td>
+                    <td class="text-muted small">{{ user.email }}</td>
+                    <td class="small">{{ user.etablissement ?? '—' }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ user.classes|length }}</span>
+                    </td>
+                    <td class="text-center">
+                        {% if 'ROLE_ADMIN' in user.roles %}
+                            <span class="badge bg-danger">Admin</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark border">User</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if user.newsletterOptOut %}
+                            <form method="post" action="{{ path('admin_user_toggle_newsletter', {id: user.id}) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary py-0" title="Réabonner">
+                                    <i class="bi bi-bell-slash text-danger"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <i class="bi bi-bell-fill text-success" title="Abonné"></i>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ user.createdAt|date('d/m/Y') }}</td>
+                    <td class="text-end pe-3">
+                        <div class="d-flex gap-1 justify-content-end">
+                            <form method="post" action="{{ path('admin_user_toggle_admin', {id: user.id}) }}">
+                                <button type="submit"
+                                        class="btn btn-sm {{ 'ROLE_ADMIN' in user.roles ? 'btn-danger' : 'btn-outline-warning' }}"
+                                        title="{{ 'ROLE_ADMIN' in user.roles ? 'Rétrograder' : 'Promouvoir admin' }}"
+                                        {{ user == app.user ? 'disabled' : '' }}>
+                                    <i class="bi bi-shield{{ 'ROLE_ADMIN' in user.roles ? '-fill' : '' }}"></i>
+                                </button>
+                            </form>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteUser{{ user.id }}"
+                                    {{ user == app.user ? 'disabled' : '' }}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Delete modals #}
+{% for user in users %}
+<div class="modal fade" id="deleteUser{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Supprimer l'utilisateur</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small">
+                Supprimer <strong>{{ user.fullName }}</strong> ({{ user.email }}) ?
+                <div class="text-danger mt-1">Toutes ses classes et résultats seront supprimés.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

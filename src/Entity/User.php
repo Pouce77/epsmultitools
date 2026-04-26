@@ -52,6 +52,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $newsletterOptOut = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $warningEmailSentAt = null;
+
     #[ORM\OneToMany(mappedBy: 'enseignant', targetEntity: Classe::class, orphanRemoval: true)]
     private Collection $classes;
 
@@ -168,6 +174,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->resetToken !== null
             && $this->resetTokenExpiresAt !== null
             && $this->resetTokenExpiresAt > new \DateTimeImmutable();
+    }
+
+    public function isNewsletterOptOut(): bool { return $this->newsletterOptOut; }
+
+    public function setNewsletterOptOut(bool $v): static
+    {
+        $this->newsletterOptOut = $v;
+        return $this;
+    }
+
+    public function getWarningEmailSentAt(): ?\DateTimeImmutable { return $this->warningEmailSentAt; }
+
+    public function setWarningEmailSentAt(?\DateTimeImmutable $at): static
+    {
+        $this->warningEmailSentAt = $at;
+        return $this;
     }
 
     public function getFullName(): string

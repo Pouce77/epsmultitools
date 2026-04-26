@@ -1,0 +1,198 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Tableau de bord{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Tableau de bord</h4>
+</div>
+
+{# ── Chiffres clés ──────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #0f9e8e !important;">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="bi bi-people me-1"></i>Utilisateurs total</div>
+                <div class="fw-bold fs-2 text-dark">{{ nbUsers }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #0d6efd !important;">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="bi bi-person-plus me-1"></i>Inscrits ce mois</div>
+                <div class="fw-bold fs-2 text-dark">{{ nbUsersMonth }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #f5b800 !important;">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="bi bi-mortarboard me-1"></i>Classes créées</div>
+                <div class="fw-bold fs-2 text-dark">{{ nbClasses }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #e84020 !important;">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="bi bi-archive me-1"></i>Résultats sauvegardés</div>
+                <div class="fw-bold fs-2 text-dark">{{ nbResultats }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Graphiques ─────────────────────────────────────────────────────── #}
+<div class="row g-3">
+
+    {# Inscriptions par mois #}
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+                <h6 class="fw-bold mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Inscriptions (6 derniers mois)</h6>
+            </div>
+            <div class="card-body" style="min-height:220px;position:relative;">
+                <canvas id="chartInscriptions"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {# Outils les plus utilisés #}
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+                <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart text-primary me-2"></i>Outils utilisés</h6>
+            </div>
+            <div class="card-body">
+                {% set outilIcons = {vitesse:'⏱️', actions:'📊', scores:'🏆', tournoi:'🎯', equipes:'⚖️', impacts:'🎾'} %}
+                {% set outilLabels = {vitesse:'Vitesse', actions:'Actions', scores:'Scores', tournoi:'Tournoi', equipes:'Équipes', impacts:'Impacts'} %}
+                {% set total = outilsStats|reduce((carry, s) => carry + s.nb, 0) %}
+                {% for s in outilsStats %}
+                    {% set pct = total > 0 ? ((s.nb / total * 100)|round) : 0 %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-semibold">{{ outilIcons[s.outil] ?? '📁' }} {{ outilLabels[s.outil] ?? s.outil }}</span>
+                            <span class="small text-muted">{{ s.nb }} ({{ pct }}%)</span>
+                        </div>
+                        <div class="progress" style="height:7px;">
+                            <div class="progress-bar bg-primary" style="width:{{ pct }}%"></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-muted small">Aucune donnée.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# ── Heatmap activité semaine × heure ───────────────────────────────── #}
+<div class="card border-0 shadow-sm mt-3">
+    <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+        <h6 class="fw-bold mb-0"><i class="bi bi-grid-3x3 text-primary me-2"></i>Activité — jour × heure</h6>
+        <p class="text-muted small mb-2">Nombre d'enregistrements par créneau horaire (toute la base)</p>
+    </div>
+    <div class="card-body pb-3" style="overflow-x:auto;">
+        {% set days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+        {% set maxVal = heatmapMax %}
+        <table style="border-collapse:separate;border-spacing:2px;table-layout:fixed;min-width:560px;">
+            <thead>
+                <tr>
+                    <th style="width:34px;"></th>
+                    {% for h in 0..23 %}
+                    <th style="width:22px;font-size:9px;font-weight:500;text-align:center;color:#aaa;padding-bottom:3px;">
+                        {{ h % 6 == 0 ? h ~ 'h' : '' }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in 0..6 %}
+                <tr>
+                    <th style="font-size:10px;font-weight:600;text-align:right;padding-right:6px;color:#555;white-space:nowrap;vertical-align:middle;">
+                        {{ days[d] }}
+                    </th>
+                    {% for h in 0..23 %}
+                        {% set val = heatmapData[d][h] %}
+                        {% set alpha = maxVal > 0 and val > 0 ? (0.12 + (val / maxVal) * 0.88)|round(2) : 0 %}
+                        <td style="width:22px;height:18px;border-radius:3px;background:rgba(15,158,142,{{ alpha }});"
+                            title="{{ days[d] }} {{ h }}h : {{ val }} enregistrement{{ val > 1 ? 's' : '' }}">
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="d-flex align-items-center gap-1 mt-2" style="font-size:10px;color:#aaa;">
+            <span>Moins</span>
+            {% for i in 1..5 %}
+                {% set a = (i / 5 * 0.88 + 0.12)|round(2) %}
+                <div style="width:14px;height:14px;border-radius:2px;background:rgba(15,158,142,{{ a }});"></div>
+            {% endfor %}
+            <span>Plus</span>
+        </div>
+    </div>
+</div>
+
+{# ── Stats établissements ───────────────────────────────────────────── #}
+{% if statsEtablissement is not empty %}
+<div class="card border-0 shadow-sm mt-3">
+    <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+        <h6 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i>Top établissements</h6>
+    </div>
+    <div class="card-body py-2">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>Établissement</th><th class="text-center">Utilisateurs</th></tr>
+                </thead>
+                <tbody>
+                {% for s in statsEtablissement %}
+                    <tr>
+                        <td>{{ s.etablissement }}</td>
+                        <td class="text-center fw-bold">{{ s.nb }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const data = {{ inscriptionsData|json_encode|raw }};
+    const labels = data.map(d => d.mois);
+    const values = data.map(d => parseInt(d.nb));
+
+    new Chart(document.getElementById('chartInscriptions'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Inscriptions',
+                data: values,
+                backgroundColor: '#0f9e8e99',
+                borderColor: '#0f9e8e',
+                borderWidth: 2,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

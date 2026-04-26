@@ -58,6 +58,14 @@
                                     <i class="bi bi-person-gear me-1"></i>Mon compte
                                 </a>
                             </li>
+                            {% if is_granted('ROLE_ADMIN') %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item fw-semibold" style="color:#e84020" href="{{ path('admin_dashboard') }}">
+                                    <i class="bi bi-shield-fill me-1"></i>Administration
+                                </a>
+                            </li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger" href="{{ path('app_logout') }}">
