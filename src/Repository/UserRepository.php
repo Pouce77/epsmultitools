@@ -64,6 +64,45 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()->getResult();
     }
 
+    /** Filtered + paginated user list. Returns ['users', 'total', 'pages']. */
+    public function findFiltered(string $q, string $role, int $page, int $perPage = 25): array
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        if ($q !== '') {
+            $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q OR u.email LIKE :q OR u.etablissement LIKE :q')
+               ->setParameter('q', '%' . $q . '%');
+        }
+        if ($role === 'admin') {
+            $qb->andWhere('u.roles LIKE :admin')->setParameter('admin', '%ROLE_ADMIN%');
+        } elseif ($role === 'user') {
+            $qb->andWhere('u.roles NOT LIKE :admin')->setParameter('admin', '%ROLE_ADMIN%');
+        }
+
+        $total = (int) (clone $qb)->select('COUNT(u.id)')->getQuery()->getSingleScalarResult();
+
+        $users = $qb
+            ->orderBy('u.createdAt', 'DESC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage)
+            ->getQuery()->getResult();
+
+        return ['users' => $users, 'total' => $total, 'pages' => (int) ceil($total / $perPage)];
+    }
+
+    /** Returns [userId => 'Y-m-d H:i:s'] for last ResultatOutil per user. */
+    public function lastActivitiesMap(): array
+    {
+        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            'SELECT enseignant_id, MAX(created_at) AS last_at FROM resultat_outil GROUP BY enseignant_id'
+        );
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int) $row['enseignant_id']] = $row['last_at'];
+        }
+        return $map;
+    }
+
     public function statsParEtablissement(): array
     {
         return $this->createQueryBuilder('u')
@@ -86,6 +125,41 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('since', $since)
             ->orderBy('u.createdAt', 'ASC')
             ->getQuery()->getResult();
+    }
+
+    /** @return User[] Never saved any result. */
+    public function findJamaisActifs(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('App\Entity\ResultatOutil', 'r', 'WITH', 'r.enseignant = u')
+            ->where('r.id IS NULL')
+            ->orderBy('u.createdAt', 'DESC')
+            ->getQuery()->getResult();
+    }
+
+    /** Conversion funnel: registered → class → result. */
+    public function getConversionStats(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        return [
+            'inscrits'  => (int) $conn->fetchOne('SELECT COUNT(*) FROM `user`'),
+            'classes'   => (int) $conn->fetchOne('SELECT COUNT(DISTINCT enseignant_id) FROM classe'),
+            'resultats' => (int) $conn->fetchOne('SELECT COUNT(DISTINCT enseignant_id) FROM resultat_outil'),
+        ];
+    }
+
+    /** Users sharing the same last name within the same établissement. */
+    public function findDoublons(): array
+    {
+        return $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            "SELECT etablissement, nom, COUNT(*) AS nb,
+                    GROUP_CONCAT(CONCAT(prenom, ' (', email, ')') ORDER BY prenom SEPARATOR ' · ') AS membres
+             FROM `user`
+             WHERE etablissement IS NOT NULL AND etablissement <> ''
+             GROUP BY etablissement, LOWER(nom)
+             HAVING nb > 1
+             ORDER BY etablissement, nom"
+        );
     }
 
     /** @return User[] Inactive 6+ months, warning not yet sent. */

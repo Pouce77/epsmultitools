@@ -1,0 +1,94 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Bannière globale{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-megaphone text-primary me-2"></i>Bannière globale</h4>
+</div>
+
+{# ── Créer une bannière ───────────────────────────────────────────── #}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+        <h6 class="fw-bold mb-0">Nouvelle bannière</h6>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ path('admin_banniere_create') }}" class="row g-3">
+            <div class="col-lg-8">
+                <label class="form-label small fw-semibold">Message <span class="text-danger">*</span></label>
+                <input type="text" name="contenu" class="form-control" required
+                       placeholder="Ex : Nouvelle fonctionnalité disponible — Découvrez le module Tournoi amélioré !">
+            </div>
+            <div class="col-lg-2">
+                <label class="form-label small fw-semibold">Type</label>
+                <select name="type" class="form-select">
+                    <option value="info">ℹ️ Info (bleu)</option>
+                    <option value="success">✅ Succès (vert)</option>
+                    <option value="warning">⚠️ Avertissement (orange)</option>
+                    <option value="danger">🚨 Danger (rouge)</option>
+                </select>
+            </div>
+            <div class="col-lg-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle me-1"></i>Créer
+                </button>
+            </div>
+        </form>
+        <p class="text-muted small mt-2 mb-0">Une seule bannière active s'affiche sur toutes les pages du site pour les utilisateurs connectés.</p>
+    </div>
+</div>
+
+{# ── Liste des bannières ───────────────────────────────────────────── #}
+{% if messages is not empty %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Message</th>
+                    <th class="text-center" style="width:90px;">Type</th>
+                    <th class="text-center" style="width:80px;">Statut</th>
+                    <th style="width:100px;">Créé le</th>
+                    <th class="text-end pe-3" style="width:120px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for msg in messages %}
+                <tr class="{{ msg.actif ? 'table-' ~ msg.type : '' }}">
+                    <td class="small">{{ msg.contenu }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-{{ msg.type }}">{{ msg.type }}</span>
+                    </td>
+                    <td class="text-center">
+                        {% if msg.actif %}
+                            <span class="badge bg-success"><i class="bi bi-eye me-1"></i>Visible</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Masquée</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ msg.createdAt|date('d/m/Y') }}</td>
+                    <td class="text-end pe-3">
+                        <div class="d-flex gap-1 justify-content-end">
+                            <form method="post" action="{{ path('admin_banniere_toggle', {id: msg.id}) }}">
+                                <button type="submit" class="btn btn-sm {{ msg.actif ? 'btn-warning' : 'btn-outline-success' }} py-0"
+                                        title="{{ msg.actif ? 'Masquer' : 'Activer' }}">
+                                    <i class="bi bi-{{ msg.actif ? 'eye-slash' : 'eye' }}"></i>
+                                </button>
+                            </form>
+                            <form method="post" action="{{ path('admin_banniere_delete', {id: msg.id}) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0"
+                                        onclick="return confirm('Supprimer cette bannière ?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+    <p class="text-muted">Aucune bannière créée.</p>
+{% endif %}
+{% endblock %}

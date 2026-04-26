@@ -3,11 +3,44 @@
 
 {% block admin_body %}
 <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-    <h4 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Utilisateurs <span class="badge bg-secondary ms-1">{{ users|length }}</span></h4>
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-people text-primary me-2"></i>Utilisateurs
+        <span class="badge bg-secondary ms-1">{{ total }}</span>
+    </h4>
     <a href="{{ path('admin_users_export_csv') }}" class="btn btn-outline-success btn-sm">
         <i class="bi bi-filetype-csv me-1"></i>Exporter CSV
     </a>
 </div>
+
+{# ── Recherche & filtres ───────────────────────────────────────────── #}
+<form method="get" action="{{ path('admin_users') }}" class="card border-0 shadow-sm mb-3 p-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-sm-6 col-lg-7">
+            <label class="form-label small fw-semibold mb-1">Recherche</label>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ q }}" class="form-control"
+                       placeholder="Nom, email ou établissement…" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-sm-3 col-lg-2">
+            <label class="form-label small fw-semibold mb-1">Rôle</label>
+            <select name="role" class="form-select form-select-sm">
+                <option value="tous" {{ role == 'tous' ? 'selected' : '' }}>Tous</option>
+                <option value="user" {{ role == 'user' ? 'selected' : '' }}>Utilisateurs</option>
+                <option value="admin" {{ role == 'admin' ? 'selected' : '' }}>Admins</option>
+            </select>
+        </div>
+        <div class="col-sm-3 col-lg-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Filtrer</button>
+            {% if q != '' or role != 'tous' %}
+                <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</form>
 
 {# ── Comptes à supprimer (avertis depuis 30+ jours) ───────────────── #}
 {% if aSupprimer is not empty %}
@@ -25,10 +58,7 @@
             <div class="table-responsive">
                 <table class="table table-sm mb-0 align-middle">
                     <thead class="table-light">
-                        <tr>
-                            <th>Nom</th><th>Email</th><th>Établissement</th>
-                            <th>Averti le</th><th class="text-end pe-3">Actions</th>
-                        </tr>
+                        <tr><th>Nom</th><th>Email</th><th>Établissement</th><th>Averti le</th><th class="text-end pe-3">Actions</th></tr>
                     </thead>
                     <tbody>
                     {% for user in aSupprimer %}
@@ -53,7 +83,7 @@
 </div>
 {% endif %}
 
-{# ── Comptes à avertir (6 mois inactifs, pas encore avertis) ──────── #}
+{# ── Comptes à avertir (6 mois inactifs) ──────────────────────────── #}
 {% if aAvertir is not empty %}
 <div class="card border-0 shadow-sm mb-3 border-start border-warning border-4">
     <div class="card-header bg-white border-0 py-2 px-3 d-flex align-items-center justify-content-between">
@@ -69,10 +99,7 @@
             <div class="table-responsive">
                 <table class="table table-sm mb-0 align-middle">
                     <thead class="table-light">
-                        <tr>
-                            <th>Nom</th><th>Email</th><th>Établissement</th>
-                            <th>Inscription</th><th class="text-end pe-3">Actions</th>
-                        </tr>
+                        <tr><th>Nom</th><th>Email</th><th>Établissement</th><th>Inscription</th><th class="text-end pe-3">Actions</th></tr>
                     </thead>
                     <tbody>
                     {% for user in aAvertir %}
@@ -84,7 +111,7 @@
                             <td class="text-end pe-3">
                                 <div class="d-flex gap-1 justify-content-end">
                                     <form method="post" action="{{ path('admin_user_send_warning', {id: user.id}) }}">
-                                        <button type="submit" class="btn btn-sm btn-warning py-0" title="Envoyer l'email d'avertissement">
+                                        <button type="submit" class="btn btn-sm btn-warning py-0">
                                             <i class="bi bi-envelope-exclamation me-1"></i>Avertir
                                         </button>
                                     </form>
@@ -104,7 +131,7 @@
 </div>
 {% endif %}
 
-{# ── Liste complète ────────────────────────────────────────────────── #}
+{# ── Liste principale ──────────────────────────────────────────────── #}
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover table-sm mb-0 align-middle">
@@ -115,14 +142,16 @@
                     <th>Email</th>
                     <th>Établissement</th>
                     <th class="text-center">Classes</th>
+                    <th class="text-center">Élèves</th>
                     <th class="text-center">Rôle</th>
-                    <th class="text-center">Newsletter</th>
                     <th>Inscription</th>
+                    <th>Dernière activité</th>
                     <th class="text-end pe-3">Actions</th>
                 </tr>
             </thead>
             <tbody>
             {% for user in users %}
+                {% set lastAt = lastActivities[user.id] ?? null %}
                 <tr>
                     <td class="text-muted small">{{ user.id }}</td>
                     <td class="fw-semibold">
@@ -134,24 +163,25 @@
                         <span class="badge bg-light text-dark border">{{ user.classes|length }}</span>
                     </td>
                     <td class="text-center">
+                        {% set nbEleves = 0 %}
+                        {% for c in user.classes %}{% set nbEleves = nbEleves + c.effectif %}{% endfor %}
+                        <span class="badge bg-light text-dark border">{{ nbEleves }}</span>
+                    </td>
+                    <td class="text-center">
                         {% if 'ROLE_ADMIN' in user.roles %}
                             <span class="badge bg-danger">Admin</span>
                         {% else %}
                             <span class="badge bg-light text-dark border">User</span>
                         {% endif %}
                     </td>
-                    <td class="text-center">
-                        {% if user.newsletterOptOut %}
-                            <form method="post" action="{{ path('admin_user_toggle_newsletter', {id: user.id}) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-secondary py-0" title="Réabonner">
-                                    <i class="bi bi-bell-slash text-danger"></i>
-                                </button>
-                            </form>
+                    <td class="text-muted small">{{ user.createdAt|date('d/m/Y') }}</td>
+                    <td class="small">
+                        {% if lastAt %}
+                            <span class="text-success">{{ lastAt|date('d/m/Y') }}</span>
                         {% else %}
-                            <i class="bi bi-bell-fill text-success" title="Abonné"></i>
+                            <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-                    <td class="text-muted small">{{ user.createdAt|date('d/m/Y') }}</td>
                     <td class="text-end pe-3">
                         <div class="d-flex gap-1 justify-content-end">
                             <form method="post" action="{{ path('admin_user_toggle_admin', {id: user.id}) }}">
@@ -162,24 +192,94 @@
                                     <i class="bi bi-shield{{ 'ROLE_ADMIN' in user.roles ? '-fill' : '' }}"></i>
                                 </button>
                             </form>
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteUser{{ user.id }}"
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}"
                                     {{ user == app.user ? 'disabled' : '' }}>
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
+            {% else %}
+                <tr><td colspan="10" class="text-center text-muted py-4">Aucun utilisateur trouvé.</td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
+
+    {# Pagination #}
+    {% if pages > 1 %}
+    <div class="card-footer bg-white border-0 d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+        <span class="text-muted small">
+            Page {{ page }} / {{ pages }} &nbsp;·&nbsp; {{ total }} utilisateur{{ total > 1 ? 's' : '' }}
+        </span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {{ page <= 1 ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ path('admin_users', {q: q, role: role, page: page - 1}) }}">‹</a>
+                </li>
+                {% for p in max(1, page - 2)..min(pages, page + 2) %}
+                    <li class="page-item {{ p == page ? 'active' : '' }}">
+                        <a class="page-link" href="{{ path('admin_users', {q: q, role: role, page: p}) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {{ page >= pages ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ path('admin_users', {q: q, role: role, page: page + 1}) }}">›</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 
 {# Delete modals #}
 {% for user in users %}
+<div class="modal fade" id="deleteUser{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Supprimer l'utilisateur</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small">
+                Supprimer <strong>{{ user.fullName }}</strong> ({{ user.email }}) ?
+                <div class="text-danger mt-1">Toutes ses classes et résultats seront supprimés.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% for user in aSupprimer %}
+<div class="modal fade" id="deleteUser{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Supprimer l'utilisateur</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small">
+                Supprimer <strong>{{ user.fullName }}</strong> ({{ user.email }}) ?
+                <div class="text-danger mt-1">Toutes ses classes et résultats seront supprimés.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% for user in aAvertir %}
 <div class="modal fade" id="deleteUser{{ user.id }}" tabindex="-1">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">

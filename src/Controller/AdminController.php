@@ -3,10 +3,14 @@
 namespace App\Controller;
 
 use App\Controller\AccountController;
+use App\Entity\GlobalMessage;
 use App\Entity\User;
+use App\Repository\AdminLogRepository;
 use App\Repository\ClasseRepository;
+use App\Repository\GlobalMessageRepository;
 use App\Repository\ResultatOutilRepository;
 use App\Repository\UserRepository;
+use App\Service\AdminLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,28 +38,42 @@ class AdminController extends AbstractController
         $heatmapMax  = max(1, ...array_map(fn($row) => max($row), $heatmapData));
 
         return $this->render('admin/dashboard.html.twig', [
-            'nbUsers'           => $userRepo->countTotal(),
-            'nbUsersMonth'      => $userRepo->countThisMonth(),
-            'nbClasses'         => $classeRepo->count([]),
-            'nbResultats'       => $resultatRepo->countTotal(),
-            'outilsStats'       => $resultatRepo->countByOutil(),
-            'inscriptionsData'  => $userRepo->inscriptionsParMois(6),
-            'statsEtablissement'=> $userRepo->statsParEtablissement(),
-            'heatmapData'       => $heatmapData,
-            'heatmapMax'        => $heatmapMax,
+            'nbUsers'                => $userRepo->countTotal(),
+            'nbUsersMonth'           => $userRepo->countThisMonth(),
+            'nbClasses'              => $classeRepo->count([]),
+            'nbResultats'            => $resultatRepo->countTotal(),
+            'outilsStats'            => $resultatRepo->countByOutilWithTrend(),
+            'inscriptionsData'       => $userRepo->inscriptionsParMois(6),
+            'retentionData'          => $resultatRepo->activeUsersParMois(6),
+            'statsEtablissement'     => $userRepo->statsParEtablissement(),
+            'topEtablissementsActifs'=> $resultatRepo->topEtablissementsActifs(10),
+            'heatmapData'            => $heatmapData,
+            'heatmapMax'             => $heatmapMax,
         ]);
     }
 
     // ── Users list ─────────────────────────────────────────────────────────
 
     #[Route('/users', name: 'users')]
-    public function users(UserRepository $userRepo): Response
+    public function users(UserRepository $userRepo, Request $request): Response
     {
+        $q    = trim($request->query->get('q', ''));
+        $role = $request->query->get('role', 'tous');
+        $page = max(1, (int) $request->query->get('page', 1));
+
+        $result         = $userRepo->findFiltered($q, $role, $page);
+        $lastActivities = $userRepo->lastActivitiesMap();
+
         return $this->render('admin/users.html.twig', [
-            'users'      => $userRepo->findAllOrderedByDate(),
-            'inactifs'   => $userRepo->findInactifs(90),
-            'aAvertir'   => $userRepo->findAavertir(),
-            'aSupprimer' => $userRepo->findASupprimer(),
+            'users'          => $result['users'],
+            'total'          => $result['total'],
+            'pages'          => $result['pages'],
+            'page'           => $page,
+            'q'              => $q,
+            'role'           => $role,
+            'lastActivities' => $lastActivities,
+            'aAvertir'       => $userRepo->findAavertir(),
+            'aSupprimer'     => $userRepo->findASupprimer(),
         ]);
     }
 
@@ -68,7 +86,7 @@ class AdminController extends AbstractController
 
         $response = new StreamedResponse(function () use ($users) {
             $fp = fopen('php://output', 'w');
-            fprintf($fp, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8 pour Excel
+            fprintf($fp, chr(0xEF).chr(0xBB).chr(0xBF));
             fputcsv($fp, ['ID', 'Prénom', 'Nom', 'Email', 'Établissement', 'Rôle', 'Inscription'], ';');
             foreach ($users as $user) {
                 fputcsv($fp, [
@@ -121,7 +139,7 @@ class AdminController extends AbstractController
     // ── Send inactivity warning ────────────────────────────────────────────
 
     #[Route('/users/{id}/send-warning', name: 'user_send_warning', methods: ['POST'])]
-    public function sendWarning(User $user, EntityManagerInterface $em, MailerInterface $mailer): Response
+    public function sendWarning(User $user, EntityManagerInterface $em, MailerInterface $mailer, AdminLogger $logger): Response
     {
         $token     = AccountController::buildDeletionToken($user->getId(), $user->getEmail());
         $deleteUrl = $this->generateUrl('account_delete', ['id' => $user->getId(), 'token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -141,6 +159,7 @@ class AdminController extends AbstractController
         $user->setWarningEmailSentAt(new \DateTimeImmutable());
         $em->flush();
 
+        $logger->log($this->getUser(), 'Avertissement inactivité envoyé', $user);
         $this->addFlash('success', 'Avertissement envoyé à ' . $user->getFullName() . '.');
         return $this->redirectToRoute('admin_users');
     }
@@ -148,20 +167,18 @@ class AdminController extends AbstractController
     // ── Toggle admin role ──────────────────────────────────────────────────
 
     #[Route('/users/{id}/toggle-admin', name: 'user_toggle_admin', methods: ['POST'])]
-    public function toggleAdmin(User $user, EntityManagerInterface $em): Response
+    public function toggleAdmin(User $user, EntityManagerInterface $em, AdminLogger $logger): Response
     {
         if ($user === $this->getUser()) {
             $this->addFlash('danger', 'Vous ne pouvez pas modifier votre propre rôle.');
             return $this->redirectToRoute('admin_users');
         }
 
-        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            $user->setRoles(['ROLE_USER']);
-        } else {
-            $user->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
-        }
+        $isAdmin = in_array('ROLE_ADMIN', $user->getRoles(), true);
+        $user->setRoles($isAdmin ? ['ROLE_USER'] : ['ROLE_ADMIN', 'ROLE_USER']);
         $em->flush();
 
+        $logger->log($this->getUser(), $isAdmin ? 'Rétrogradation admin' : 'Promotion admin', $user);
         $this->addFlash('success', 'Rôle mis à jour pour ' . $user->getFullName() . '.');
         return $this->redirectToRoute('admin_users');
     }
@@ -169,7 +186,7 @@ class AdminController extends AbstractController
     // ── Delete user ────────────────────────────────────────────────────────
 
     #[Route('/users/{id}/delete', name: 'user_delete', methods: ['POST'])]
-    public function deleteUser(User $user, EntityManagerInterface $em, Request $request): Response
+    public function deleteUser(User $user, EntityManagerInterface $em, Request $request, AdminLogger $logger): Response
     {
         if ($user === $this->getUser()) {
             $this->addFlash('danger', 'Vous ne pouvez pas supprimer votre propre compte.');
@@ -181,6 +198,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('admin_users');
         }
 
+        $logger->log($this->getUser(), 'Suppression utilisateur', $user);
         $em->remove($user);
         $em->flush();
 
@@ -209,11 +227,8 @@ class AdminController extends AbstractController
     }
 
     #[Route('/newsletter/send', name: 'newsletter_send', methods: ['POST'])]
-    public function newsletterSend(
-        Request $request,
-        UserRepository $userRepo,
-        MailerInterface $mailer,
-    ): Response {
+    public function newsletterSend(Request $request, UserRepository $userRepo, MailerInterface $mailer): Response
+    {
         $sujet = trim($request->request->get('sujet', ''));
         $corps = trim($request->request->get('corps', ''));
         $cible = $request->request->get('cible', 'tous');
@@ -223,41 +238,78 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('admin_newsletter');
         }
 
-        $users = $userRepo->findAllOrderedByDate();
-        $users = array_filter($users, fn(User $u) => !$u->isNewsletterOptOut());
+        $users = array_filter($userRepo->findAllOrderedByDate(), fn(User $u) => !$u->isNewsletterOptOut());
         if ($cible === 'actifs') {
-            $inactifs = array_map(fn(User $u) => $u->getId(), $userRepo->findInactifs(90));
-            $users = array_filter($users, fn(User $u) => !in_array($u->getId(), $inactifs, true));
+            $inactifsIds = array_map(fn(User $u) => $u->getId(), $userRepo->findInactifs(90));
+            $users = array_filter($users, fn(User $u) => !in_array($u->getId(), $inactifsIds, true));
         }
 
-        $sent = 0;
-        $errors = 0;
+        $sent = 0; $errors = 0;
         foreach ($users as $user) {
             try {
                 $unsubscribeToken = NewsletterController::buildToken($user->getId(), $user->getEmail());
-                $unsubscribeUrl = $this->generateUrl(
-                    'newsletter_unsubscribe',
-                    ['id' => $user->getId(), 'token' => $unsubscribeToken],
-                    UrlGeneratorInterface::ABSOLUTE_URL,
+                $unsubscribeUrl   = $this->generateUrl('newsletter_unsubscribe', ['id' => $user->getId(), 'token' => $unsubscribeToken], UrlGeneratorInterface::ABSOLUTE_URL);
+                $mailer->send(
+                    (new Email())
+                        ->from($this->getParameter('app.contact_email'))
+                        ->to($user->getEmail())
+                        ->subject($sujet)
+                        ->html($this->renderView('admin/email/newsletter.html.twig', ['user' => $user, 'corps' => $corps, 'sujet' => $sujet, 'unsubscribeUrl' => $unsubscribeUrl]))
                 );
-                $email = (new Email())
-                    ->from($this->getParameter('app.contact_email'))
-                    ->to($user->getEmail())
-                    ->subject($sujet)
-                    ->html($this->renderView('admin/email/newsletter.html.twig', [
-                        'user'           => $user,
-                        'corps'          => $corps,
-                        'sujet'          => $sujet,
-                        'unsubscribeUrl' => $unsubscribeUrl,
-                    ]));
-                $mailer->send($email);
                 $sent++;
-            } catch (\Throwable) {
-                $errors++;
-            }
+            } catch (\Throwable) { $errors++; }
         }
 
         $this->addFlash('success', "$sent email(s) envoyé(s)" . ($errors > 0 ? ", $errors erreur(s)." : '.'));
         return $this->redirectToRoute('admin_newsletter');
+    }
+
+    // ── Bannière globale ───────────────────────────────────────────────────
+
+    #[Route('/banniere', name: 'banniere')]
+    public function banniere(GlobalMessageRepository $repo): Response
+    {
+        return $this->render('admin/banniere.html.twig', ['messages' => $repo->findAll()]);
+    }
+
+    #[Route('/banniere/create', name: 'banniere_create', methods: ['POST'])]
+    public function banniereCreate(Request $request, EntityManagerInterface $em): Response
+    {
+        $contenu = trim($request->request->get('contenu', ''));
+        $type    = $request->request->get('type', 'info');
+
+        if ($contenu !== '' && in_array($type, ['info', 'success', 'warning', 'danger'], true)) {
+            $msg = (new GlobalMessage())->setContenu($contenu)->setType($type)->setActif(true);
+            $em->persist($msg);
+            $em->flush();
+            $this->addFlash('success', 'Bannière créée.');
+        }
+
+        return $this->redirectToRoute('admin_banniere');
+    }
+
+    #[Route('/banniere/{id}/toggle', name: 'banniere_toggle', methods: ['POST'])]
+    public function banniereToggle(GlobalMessage $message, EntityManagerInterface $em): Response
+    {
+        $message->setActif(!$message->isActif());
+        $em->flush();
+        return $this->redirectToRoute('admin_banniere');
+    }
+
+    #[Route('/banniere/{id}/delete', name: 'banniere_delete', methods: ['POST'])]
+    public function banniereDelete(GlobalMessage $message, EntityManagerInterface $em): Response
+    {
+        $em->remove($message);
+        $em->flush();
+        $this->addFlash('success', 'Bannière supprimée.');
+        return $this->redirectToRoute('admin_banniere');
+    }
+
+    // ── Journal d'activité ─────────────────────────────────────────────────
+
+    #[Route('/logs', name: 'logs')]
+    public function logs(AdminLogRepository $logRepo): Response
+    {
+        return $this->render('admin/logs.html.twig', ['logs' => $logRepo->findRecent(200)]);
     }
 }

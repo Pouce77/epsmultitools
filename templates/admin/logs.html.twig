@@ -1,0 +1,50 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Journal d'activité{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-journal-text text-primary me-2"></i>Journal d'activité</h4>
+    <span class="badge bg-secondary">{{ logs|length }} dernières actions</span>
+</div>
+
+<div class="card border-0 shadow-sm">
+    {% if logs is not empty %}
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:140px;">Date</th>
+                    <th style="width:200px;">Action</th>
+                    <th>Cible</th>
+                    <th>Admin</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for log in logs %}
+                {% set actionColor = {
+                    'Suppression utilisateur':            'danger',
+                    'Promotion admin':                    'warning',
+                    'Rétrogradation admin':               'secondary',
+                    'Avertissement inactivité envoyé':    'info',
+                }[log.action] ?? 'light' %}
+                <tr>
+                    <td class="text-muted small font-monospace">{{ log.createdAt|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <span class="badge bg-{{ actionColor }} {{ actionColor == 'light' ? 'text-dark' : '' }}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td class="small">{{ log.targetUserLabel ?? '—' }}</td>
+                    <td class="small text-muted">{{ log.adminLabel ?? '—' }}</td>
+                    <td class="small text-muted">{{ log.details ?? '' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="card-body text-muted text-center py-5">Aucune action enregistrée.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -49,11 +49,17 @@
 {# ── Graphiques ─────────────────────────────────────────────────────── #}
 <div class="row g-3">
 
-    {# Inscriptions par mois #}
+    {# Inscriptions + rétention par mois #}
     <div class="col-lg-7">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
-                <h6 class="fw-bold mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Inscriptions (6 derniers mois)</h6>
+                <h6 class="fw-bold mb-0">
+                    <i class="bi bi-graph-up text-primary me-2"></i>Inscriptions & utilisateurs actifs (6 mois)
+                </h6>
+                <div class="d-flex gap-3 mt-1 mb-1" style="font-size:11px;">
+                    <span><span class="d-inline-block rounded-1 me-1" style="width:12px;height:12px;background:#0f9e8e99;"></span>Inscriptions</span>
+                    <span><span class="d-inline-block rounded-1 me-1" style="width:12px;height:12px;background:#0d6efdaa;"></span>Actifs</span>
+                </div>
             </div>
             <div class="card-body" style="min-height:220px;position:relative;">
                 <canvas id="chartInscriptions"></canvas>
@@ -61,22 +67,34 @@
         </div>
     </div>
 
-    {# Outils les plus utilisés #}
+    {# Outils avec tendance #}
     <div class="col-lg-5">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
                 <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart text-primary me-2"></i>Outils utilisés</h6>
             </div>
             <div class="card-body">
-                {% set outilIcons = {vitesse:'⏱️', actions:'📊', scores:'🏆', tournoi:'🎯', equipes:'⚖️', impacts:'🎾'} %}
+                {% set outilIcons  = {vitesse:'⏱️', actions:'📊', scores:'🏆', tournoi:'🎯', equipes:'⚖️', impacts:'🎾'} %}
                 {% set outilLabels = {vitesse:'Vitesse', actions:'Actions', scores:'Scores', tournoi:'Tournoi', equipes:'Équipes', impacts:'Impacts'} %}
-                {% set total = outilsStats|reduce((carry, s) => carry + s.nb, 0) %}
+                {% set totalAll = outilsStats|reduce((c, s) => c + s.total, 0) %}
                 {% for s in outilsStats %}
-                    {% set pct = total > 0 ? ((s.nb / total * 100)|round) : 0 %}
+                    {% set pct = totalAll > 0 ? ((s.total / totalAll * 100)|round) : 0 %}
+                    {% set trend = s.mois_prec > 0 ? ((s.ce_mois - s.mois_prec) / s.mois_prec * 100)|round : null %}
                     <div class="mb-2">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="small fw-semibold">{{ outilIcons[s.outil] ?? '📁' }} {{ outilLabels[s.outil] ?? s.outil }}</span>
-                            <span class="small text-muted">{{ s.nb }} ({{ pct }}%)</span>
+                            <span class="d-flex align-items-center gap-2">
+                                <span class="small text-muted">{{ s.total }} ({{ pct }}%)</span>
+                                {% if trend is not null %}
+                                    {% if trend > 0 %}
+                                        <span class="badge bg-success-subtle text-success" style="font-size:10px;">↑ {{ trend }}%</span>
+                                    {% elseif trend < 0 %}
+                                        <span class="badge bg-danger-subtle text-danger" style="font-size:10px;">↓ {{ trend|abs }}%</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted" style="font-size:10px;">= 0%</span>
+                                    {% endif %}
+                                {% endif %}
+                            </span>
                         </div>
                         <div class="progress" style="height:7px;">
                             <div class="progress-bar bg-primary" style="width:{{ pct }}%"></div>
@@ -114,15 +132,12 @@
             <tbody>
                 {% for d in 0..6 %}
                 <tr>
-                    <th style="font-size:10px;font-weight:600;text-align:right;padding-right:6px;color:#555;white-space:nowrap;vertical-align:middle;">
-                        {{ days[d] }}
-                    </th>
+                    <th style="font-size:10px;font-weight:600;text-align:right;padding-right:6px;color:#555;white-space:nowrap;vertical-align:middle;">{{ days[d] }}</th>
                     {% for h in 0..23 %}
                         {% set val = heatmapData[d][h] %}
                         {% set alpha = maxVal > 0 and val > 0 ? (0.12 + (val / maxVal) * 0.88)|round(2) : 0 %}
                         <td style="width:22px;height:18px;border-radius:3px;background:rgba(15,158,142,{{ alpha }});"
-                            title="{{ days[d] }} {{ h }}h : {{ val }} enregistrement{{ val > 1 ? 's' : '' }}">
-                        </td>
+                            title="{{ days[d] }} {{ h }}h : {{ val }} enregistrement{{ val > 1 ? 's' : '' }}"></td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -131,66 +146,111 @@
         <div class="d-flex align-items-center gap-1 mt-2" style="font-size:10px;color:#aaa;">
             <span>Moins</span>
             {% for i in 1..5 %}
-                {% set a = (i / 5 * 0.88 + 0.12)|round(2) %}
-                <div style="width:14px;height:14px;border-radius:2px;background:rgba(15,158,142,{{ a }});"></div>
+                <div style="width:14px;height:14px;border-radius:2px;background:rgba(15,158,142,{{ (i/5*0.88+0.12)|round(2) }});"></div>
             {% endfor %}
             <span>Plus</span>
         </div>
     </div>
 </div>
 
-{# ── Stats établissements ───────────────────────────────────────────── #}
-{% if statsEtablissement is not empty %}
-<div class="card border-0 shadow-sm mt-3">
-    <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
-        <h6 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i>Top établissements</h6>
-    </div>
-    <div class="card-body py-2">
-        <div class="table-responsive">
-            <table class="table table-sm mb-0">
-                <thead class="table-light">
-                    <tr><th>Établissement</th><th class="text-center">Utilisateurs</th></tr>
-                </thead>
-                <tbody>
-                {% for s in statsEtablissement %}
-                    <tr>
-                        <td>{{ s.etablissement }}</td>
-                        <td class="text-center fw-bold">{{ s.nb }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+{# ── Établissements : inscrits vs actifs ────────────────────────────── #}
+<div class="row g-3 mt-0">
+    {% if statsEtablissement is not empty %}
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+                <h6 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i>Top établissements — inscrits</h6>
+            </div>
+            <div class="card-body py-2">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light"><tr><th>Établissement</th><th class="text-center">Inscrits</th></tr></thead>
+                        <tbody>
+                        {% for s in statsEtablissement %}
+                            <tr><td>{{ s.etablissement }}</td><td class="text-center fw-bold">{{ s.nb }}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
+    {% endif %}
+
+    {% if topEtablissementsActifs is not empty %}
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+                <h6 class="fw-bold mb-0"><i class="bi bi-building-fill-check text-success me-2"></i>Top établissements — actifs</h6>
+                <p class="text-muted small mb-2">Classés par nombre de résultats sauvegardés</p>
+            </div>
+            <div class="card-body py-2">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr><th>Établissement</th><th class="text-center">Résultats</th><th class="text-center">Profs</th></tr>
+                        </thead>
+                        <tbody>
+                        {% for s in topEtablissementsActifs %}
+                            <tr>
+                                <td>{{ s.etablissement }}</td>
+                                <td class="text-center fw-bold text-success">{{ s.nb_resultats }}</td>
+                                <td class="text-center text-muted small">{{ s.nb_users }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
-{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const data = {{ inscriptionsData|json_encode|raw }};
-    const labels = data.map(d => d.mois);
-    const values = data.map(d => parseInt(d.nb));
+    const inscData    = {{ inscriptionsData|json_encode|raw }};
+    const retentData  = {{ retentionData|json_encode|raw }};
+
+    // Build a unified label set covering all months
+    const allMonths = [...new Set([...inscData.map(d => d.mois), ...retentData.map(d => d.mois)])].sort();
+
+    const inscMap   = Object.fromEntries(inscData.map(d => [d.mois, parseInt(d.nb)]));
+    const retentMap = Object.fromEntries(retentData.map(d => [d.mois, parseInt(d.nb)]));
 
     new Chart(document.getElementById('chartInscriptions'), {
         type: 'bar',
         data: {
-            labels,
-            datasets: [{
-                label: 'Inscriptions',
-                data: values,
-                backgroundColor: '#0f9e8e99',
-                borderColor: '#0f9e8e',
-                borderWidth: 2,
-                borderRadius: 4,
-            }]
+            labels: allMonths,
+            datasets: [
+                {
+                    label: 'Inscriptions',
+                    data: allMonths.map(m => inscMap[m] ?? 0),
+                    backgroundColor: '#0f9e8e99',
+                    borderColor: '#0f9e8e',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    order: 2,
+                },
+                {
+                    label: 'Utilisateurs actifs',
+                    data: allMonths.map(m => retentMap[m] ?? 0),
+                    type: 'line',
+                    borderColor: '#0d6efd',
+                    backgroundColor: '#0d6efd22',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.3,
+                    order: 1,
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 } }
-            }
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
         }
     });
 });
