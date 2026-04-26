@@ -14,6 +14,7 @@
             </div>
             <div class="card-body px-4 pb-4">
                 <form method="post" action="{{ path('admin_newsletter_send') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('newsletter-send') }}">
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Destinataires</label>
                         <div class="d-flex gap-3">

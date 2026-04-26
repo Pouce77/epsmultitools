@@ -13,6 +13,7 @@
     </div>
     <div class="card-body">
         <form method="post" action="{{ path('admin_banniere_create') }}" class="row g-3">
+            <input type="hidden" name="_token" value="{{ csrf_token('banniere-create') }}">
             <div class="col-lg-8">
                 <label class="form-label small fw-semibold">Message <span class="text-danger">*</span></label>
                 <input type="text" name="contenu" class="form-control" required
@@ -69,6 +70,7 @@
                     <td class="text-end pe-3">
                         <div class="d-flex gap-1 justify-content-end">
                             <form method="post" action="{{ path('admin_banniere_toggle', {id: msg.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('banniere-toggle-' ~ msg.id) }}">
                                 <button type="submit" class="btn btn-sm {{ msg.actif ? 'btn-warning' : 'btn-outline-success' }} py-0"
                                         title="{{ msg.actif ? 'Masquer' : 'Activer' }}">
                                     <i class="bi bi-{{ msg.actif ? 'eye-slash' : 'eye' }}"></i>
@@ -107,6 +109,7 @@
             <div class="modal-footer py-2">
                 <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <form method="post" action="{{ path('admin_banniere_delete', {id: msg.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('banniere-delete-' ~ msg.id) }}">
                     <button type="submit" class="btn btn-sm btn-danger">
                         <i class="bi bi-trash me-1"></i>Supprimer
                     </button>

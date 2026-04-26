@@ -142,8 +142,13 @@ class AdminController extends AbstractController
     // ── Send inactivity warning ────────────────────────────────────────────
 
     #[Route('/users/{id}/send-warning', name: 'user_send_warning', methods: ['POST'])]
-    public function sendWarning(User $user, EntityManagerInterface $em, MailerInterface $mailer, AdminLogger $logger): Response
+    public function sendWarning(User $user, EntityManagerInterface $em, MailerInterface $mailer, AdminLogger $logger, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('warn-user-' . $user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_users');
+        }
+
         $token     = AccountController::buildDeletionToken($user->getId(), $user->getEmail());
         $deleteUrl = $this->generateUrl('account_delete', ['id' => $user->getId(), 'token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
         $loginUrl  = $this->generateUrl('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -170,8 +175,13 @@ class AdminController extends AbstractController
     // ── Toggle admin role ──────────────────────────────────────────────────
 
     #[Route('/users/{id}/toggle-admin', name: 'user_toggle_admin', methods: ['POST'])]
-    public function toggleAdmin(User $user, EntityManagerInterface $em, AdminLogger $logger): Response
+    public function toggleAdmin(User $user, EntityManagerInterface $em, AdminLogger $logger, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('toggle-admin-' . $user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_users');
+        }
+
         if ($user === $this->getUser()) {
             $this->addFlash('danger', 'Vous ne pouvez pas modifier votre propre rôle.');
             return $this->redirectToRoute('admin_users');
@@ -212,8 +222,13 @@ class AdminController extends AbstractController
     // ── Toggle newsletter opt-out ──────────────────────────────────────────
 
     #[Route('/users/{id}/toggle-newsletter', name: 'user_toggle_newsletter', methods: ['POST'])]
-    public function toggleNewsletter(User $user, EntityManagerInterface $em): Response
+    public function toggleNewsletter(User $user, EntityManagerInterface $em, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('toggle-newsletter-' . $user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_users');
+        }
+
         $user->setNewsletterOptOut(!$user->isNewsletterOptOut());
         $em->flush();
 
@@ -232,6 +247,11 @@ class AdminController extends AbstractController
     #[Route('/newsletter/send', name: 'newsletter_send', methods: ['POST'])]
     public function newsletterSend(Request $request, UserRepository $userRepo, MailerInterface $mailer): Response
     {
+        if (!$this->isCsrfTokenValid('newsletter-send', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_newsletter');
+        }
+
         $sujet = trim($request->request->get('sujet', ''));
         $corps = trim($request->request->get('corps', ''));
         $cible = $request->request->get('cible', 'tous');
@@ -278,6 +298,11 @@ class AdminController extends AbstractController
     #[Route('/banniere/create', name: 'banniere_create', methods: ['POST'])]
     public function banniereCreate(Request $request, EntityManagerInterface $em): Response
     {
+        if (!$this->isCsrfTokenValid('banniere-create', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_banniere');
+        }
+
         $contenu = trim($request->request->get('contenu', ''));
         $type    = $request->request->get('type', 'info');
 
@@ -292,16 +317,26 @@ class AdminController extends AbstractController
     }
 
     #[Route('/banniere/{id}/toggle', name: 'banniere_toggle', methods: ['POST'])]
-    public function banniereToggle(GlobalMessage $message, EntityManagerInterface $em): Response
+    public function banniereToggle(GlobalMessage $message, EntityManagerInterface $em, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('banniere-toggle-' . $message->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_banniere');
+        }
+
         $message->setActif(!$message->isActif());
         $em->flush();
         return $this->redirectToRoute('admin_banniere');
     }
 
     #[Route('/banniere/{id}/delete', name: 'banniere_delete', methods: ['POST'])]
-    public function banniereDelete(GlobalMessage $message, EntityManagerInterface $em): Response
+    public function banniereDelete(GlobalMessage $message, EntityManagerInterface $em, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('banniere-delete-' . $message->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_banniere');
+        }
+
         $em->remove($message);
         $em->flush();
         $this->addFlash('success', 'Bannière supprimée.');
