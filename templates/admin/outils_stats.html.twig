@@ -1,0 +1,106 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Statistiques par outil{% endblock %}
+
+{% block admin_body %}
+<div class="mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-bar-chart-line text-primary me-2"></i>Statistiques par outil</h4>
+</div>
+
+{% if stats is empty %}
+    <div class="card border-0 shadow-sm p-4 text-center text-muted">
+        <i class="bi bi-bar-chart fs-2 mb-2"></i><br>
+        Aucun résultat enregistré pour le moment.
+    </div>
+{% else %}
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Outil</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">Utilisateurs</th>
+                    <th class="text-end">Moy. / utilisateur</th>
+                    <th class="text-end">Ce mois</th>
+                    <th>Dernière utilisation</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% set grandTotal = 0 %}
+            {% for row in stats %}
+                {% set grandTotal = grandTotal + row.total %}
+                <tr>
+                    <td class="fw-semibold small">{{ row.outil }}</td>
+                    <td class="text-end">
+                        <strong>{{ row.total }}</strong>
+                    </td>
+                    <td class="text-end">
+                        <span class="badge bg-light text-dark border">{{ row.nb_utilisateurs }}</span>
+                    </td>
+                    <td class="text-end text-muted small">{{ row.moy_par_utilisateur ?? '—' }}</td>
+                    <td class="text-end">
+                        {% if row.ce_mois > 0 %}
+                            <span class="badge bg-success">{{ row.ce_mois }}</span>
+                        {% else %}
+                            <span class="text-muted small">0</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">
+                        {% if row.derniere_utilisation %}
+                            {{ row.derniere_utilisation|date('d/m/Y H:i') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot class="table-light fw-semibold small">
+                <tr>
+                    <td>Total</td>
+                    <td class="text-end">{{ grandTotal }}</td>
+                    <td colspan="4"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+{# Bar chart #}
+<div class="card border-0 shadow-sm mt-4 p-4" style="max-width:700px;">
+    <h6 class="fw-semibold mb-3">Répartition des utilisations</h6>
+    <canvas id="outilsChart" height="120"></canvas>
+</div>
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('outilsChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ stats|map(r => r.outil)|json_encode|raw }},
+        datasets: [{
+            label: 'Total',
+            data: {{ stats|map(r => r.total)|json_encode|raw }},
+            backgroundColor: 'rgba(13,110,253,.7)',
+            borderRadius: 4,
+        }, {
+            label: 'Ce mois',
+            data: {{ stats|map(r => r.ce_mois)|json_encode|raw }},
+            backgroundColor: 'rgba(25,135,84,.6)',
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+</script>
+{% endblock %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Logs d'erreurs{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-bug text-danger me-2"></i>Logs d'erreurs</h4>
+    <span class="text-muted small font-monospace">{{ logFile }}</span>
+</div>
+
+{% if not exists %}
+    <div class="alert alert-warning">Fichier de log introuvable ou non accessible.</div>
+{% elseif entries is empty %}
+    <div class="card border-0 shadow-sm p-4 text-center text-muted">
+        <i class="bi bi-check-circle fs-2 text-success mb-2"></i><br>
+        Aucune erreur récente dans les logs.
+    </div>
+{% else %}
+<p class="text-muted small mb-2">{{ entries|length }} entrée(s) — niveaux WARNING, ERROR, CRITICAL, ALERT, EMERGENCY — 150 max.</p>
+
+{% set levelColors = {
+    WARNING:   'warning',
+    ERROR:     'danger',
+    CRITICAL:  'danger',
+    ALERT:     'danger',
+    EMERGENCY: 'dark',
+} %}
+
+<div class="d-flex flex-column gap-2">
+{% for entry in entries %}
+    <div class="card border-0 shadow-sm">
+        {# En-tête toujours cliquable — message tronqué avec "…" #}
+        <div class="card-header py-2 px-3 d-flex align-items-center justify-content-between gap-2"
+             style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#log{{ loop.index }}"
+             aria-expanded="false">
+            <div class="d-flex align-items-center gap-2 min-w-0" style="flex:1;overflow:hidden;">
+                <span class="badge bg-{{ levelColors[entry.level] ?? 'secondary' }} flex-shrink-0">{{ entry.level }}</span>
+                <span class="badge bg-light text-dark border flex-shrink-0 font-monospace" style="font-size:10px;">{{ entry.channel }}</span>
+                <span class="small flex-shrink-0 text-muted font-monospace" style="font-size:11px;">
+                    {{ entry.date|slice(0, 19)|replace({'T': ' '}) }}
+                </span>
+                <span class="small text-truncate" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+                    {{ entry.message }}
+                </span>
+            </div>
+            <i class="bi bi-chevron-down flex-shrink-0 text-muted" style="font-size:12px;transition:transform .2s;"
+               data-chevron></i>
+        </div>
+        {# Contenu déployable : message complet + contexte / stack trace #}
+        <div class="collapse" id="log{{ loop.index }}">
+            <div class="card-body py-2 px-3 border-top">
+                <p class="small mb-{% if entry.context != '' %}2{% else %}0{% endif %} fw-semibold">
+                    {{ entry.message }}
+                </p>
+                {% if entry.context != '' %}
+                <pre class="mb-0 small bg-light rounded p-2"
+                     style="white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;font-size:11px;">{{ entry.context }}</pre>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+<style>
+.card-header[aria-expanded="true"] [data-chevron] { transform: rotate(180deg); }
+[data-chevron] { transition: transform .2s; }
+</style>
+{% endif %}
+{% endblock %}

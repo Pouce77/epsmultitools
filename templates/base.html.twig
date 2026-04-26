@@ -76,6 +76,12 @@
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalFeedback">
+                                    <i class="bi bi-chat-left-text me-1"></i>Donner un avis
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <a class="dropdown-item text-danger" href="{{ path('app_logout') }}">
                                     <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
                                 </a>
@@ -136,5 +142,35 @@
 </footer>
 
 {% block javascripts %}{% endblock %}
+
+{% if app.user %}
+<div class="modal fade" id="modalFeedback" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ path('feedback_submit') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('feedback') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-chat-left-text me-2"></i>Donner un avis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold" for="fb-sujet">Sujet <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="fb-sujet" name="sujet" maxlength="150" required placeholder="Résumé de votre retour">
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label small fw-semibold" for="fb-contenu">Message <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="fb-contenu" name="contenu" rows="5" maxlength="5000" required placeholder="Décrivez votre retour, suggestion ou problème rencontré…"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send me-1"></i>Envoyer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 </body>
 </html>

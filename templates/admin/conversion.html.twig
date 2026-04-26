@@ -1,0 +1,56 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Métriques de conversion{% endblock %}
+
+{% block admin_body %}
+<div class="mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-funnel text-primary me-2"></i>Métriques de conversion</h4>
+</div>
+
+{% set pctClasses  = stats.inscrits > 0 ? (stats.classes  / stats.inscrits * 100)|round : 0 %}
+{% set pctResultat = stats.inscrits > 0 ? (stats.resultats / stats.inscrits * 100)|round : 0 %}
+
+<div class="card border-0 shadow-sm p-4" style="max-width:540px;">
+    <p class="text-muted small mb-4">
+        Entonnoir de progression des utilisateurs depuis l'inscription jusqu'à la première utilisation réelle.
+    </p>
+
+    {# Étape 1 #}
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-semibold"><i class="bi bi-person-plus me-1 text-primary"></i>Inscrits</span>
+            <strong>{{ stats.inscrits }}</strong>
+        </div>
+        <div class="progress" style="height:22px;border-radius:6px;">
+            <div class="progress-bar bg-primary" style="width:100%;">100 %</div>
+        </div>
+    </div>
+
+    {# Étape 2 #}
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-semibold"><i class="bi bi-mortarboard me-1 text-success"></i>Ont créé au moins une classe</span>
+            <strong>{{ stats.classes }} <span class="text-muted fw-normal small">({{ pctClasses }} %)</span></strong>
+        </div>
+        <div class="progress" style="height:22px;border-radius:6px;">
+            <div class="progress-bar bg-success" style="width:{{ pctClasses }}%;">{{ pctClasses }} %</div>
+        </div>
+    </div>
+
+    {# Étape 3 #}
+    <div class="mb-1">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-semibold"><i class="bi bi-archive me-1 text-warning"></i>Ont sauvegardé un résultat</span>
+            <strong>{{ stats.resultats }} <span class="text-muted fw-normal small">({{ pctResultat }} %)</span></strong>
+        </div>
+        <div class="progress" style="height:22px;border-radius:6px;">
+            <div class="progress-bar bg-warning text-dark" style="width:{{ pctResultat }}%;">{{ pctResultat }} %</div>
+        </div>
+    </div>
+
+    <hr class="mt-4">
+    <p class="text-muted small mb-0">
+        <strong>{{ stats.inscrits - stats.resultats }}</strong> utilisateur(s) inscrit(s) n'ont jamais sauvegardé de résultat.
+        <a href="{{ path('admin_users_jamais_actifs') }}" class="ms-1">Voir la liste →</a>
+    </p>
+</div>
+{% endblock %}

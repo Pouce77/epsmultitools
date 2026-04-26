@@ -31,6 +31,49 @@
                        class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_logs' ? 'active' : '' }}">
                         <i class="bi bi-journal-text me-2"></i>Journal
                     </a>
+                    <a href="{{ path('admin_logs_erreurs') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_logs_erreurs' ? 'active' : '' }}">
+                        <i class="bi bi-bug me-2"></i>Logs d'erreurs
+                    </a>
+
+                    <div class="list-group-item bg-light py-1 px-3">
+                        <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;">Statistiques</span>
+                    </div>
+
+                    <a href="{{ path('admin_conversion') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_conversion' ? 'active' : '' }}">
+                        <i class="bi bi-funnel me-2"></i>Conversion
+                    </a>
+                    <a href="{{ path('admin_outils') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_outils' ? 'active' : '' }}">
+                        <i class="bi bi-bar-chart-line me-2"></i>Outils
+                    </a>
+                    <a href="{{ path('admin_doublons') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_doublons' ? 'active' : '' }}">
+                        <i class="bi bi-copy me-2"></i>Doublons
+                    </a>
+
+                    <div class="list-group-item bg-light py-1 px-3">
+                        <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;">Gestion</span>
+                    </div>
+
+                    <a href="{{ path('admin_users_jamais_actifs') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') == 'admin_users_jamais_actifs' ? 'active' : '' }}">
+                        <i class="bi bi-person-slash me-2"></i>Jamais actifs
+                    </a>
+                    <a href="{{ path('admin_feedbacks') }}"
+                       class="list-group-item list-group-item-action small py-2 d-flex align-items-center justify-content-between {{ app.request.attributes.get('_route') == 'admin_feedbacks' ? 'active' : '' }}">
+                        <span><i class="bi bi-chat-left-text me-2"></i>Feedbacks</span>
+                        {% set _unread = feedback_unread_count() %}
+                        {% if _unread > 0 %}
+                            <span class="badge bg-primary rounded-pill">{{ _unread }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ path('admin_import_csv') }}"
+                       class="list-group-item list-group-item-action small py-2 {{ app.request.attributes.get('_route') starts with 'admin_import_csv' ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-arrow-up me-2"></i>Import CSV
+                    </a>
+
                 </div>
             </div>
         </div>

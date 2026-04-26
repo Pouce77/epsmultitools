@@ -1,0 +1,89 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Utilisateurs jamais actifs{% endblock %}
+
+{% block admin_body %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-person-slash text-warning me-2"></i>Jamais actifs
+        <span class="badge bg-secondary ms-1">{{ users|length }}</span>
+    </h4>
+    <a href="{{ path('admin_users') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+</div>
+
+<div class="alert alert-info small py-2">
+    Ces utilisateurs se sont inscrits mais n'ont <strong>jamais sauvegardé de résultat</strong>. Ils n'ont pas encore utilisé l'outil.
+</div>
+
+{% if users is not empty %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Établissement</th>
+                    <th class="text-center">Classes</th>
+                    <th>Inscription</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td class="fw-semibold small">
+                        <a href="{{ path('admin_user_show', {id: user.id}) }}" class="text-decoration-none link-dark">{{ user.fullName }}</a>
+                    </td>
+                    <td class="text-muted small">{{ user.email }}</td>
+                    <td class="small">{{ user.etablissement ?? '—' }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ user.classes|length }}</span>
+                    </td>
+                    <td class="text-muted small">{{ user.createdAt|date('d/m/Y') }}</td>
+                    <td class="text-end pe-3">
+                        <button type="button" class="btn btn-sm btn-outline-danger py-0"
+                                data-bs-toggle="modal" data-bs-target="#delJA{{ user.id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Delete modals #}
+{% for user in users %}
+<div class="modal fade" id="delJA{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Supprimer l'utilisateur</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small">
+                Supprimer <strong>{{ user.fullName }}</strong> ({{ user.email }}) ?
+                <div class="text-danger mt-1">Cette action est irréversible.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+    <div class="card border-0 shadow-sm p-4 text-center text-muted">
+        <i class="bi bi-check-circle fs-2 text-success mb-2"></i><br>
+        Tous les inscrits ont utilisé l'outil au moins une fois.
+    </div>
+{% endif %}
+{% endblock %}

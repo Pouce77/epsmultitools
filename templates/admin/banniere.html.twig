@@ -74,12 +74,11 @@
                                     <i class="bi bi-{{ msg.actif ? 'eye-slash' : 'eye' }}"></i>
                                 </button>
                             </form>
-                            <form method="post" action="{{ path('admin_banniere_delete', {id: msg.id}) }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger py-0"
-                                        onclick="return confirm('Supprimer cette bannière ?')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0"
+                                    data-bs-toggle="modal" data-bs-target="#delBanniere{{ msg.id }}"
+                                    title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -91,4 +90,30 @@
 {% else %}
     <p class="text-muted">Aucune bannière créée.</p>
 {% endif %}
+
+{# Modals de suppression #}
+{% for msg in messages %}
+<div class="modal fade" id="delBanniere{{ msg.id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Supprimer la bannière</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small">
+                <div class="alert alert-{{ msg.type }} py-2 mb-2" style="font-size:.85rem;">{{ msg.contenu }}</div>
+                <div class="text-danger">Cette action est irréversible.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('admin_banniere_delete', {id: msg.id}) }}">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

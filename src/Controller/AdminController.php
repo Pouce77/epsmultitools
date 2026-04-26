@@ -9,9 +9,12 @@ use App\Repository\AdminLogRepository;
 use App\Repository\ClasseRepository;
 use App\Repository\GlobalMessageRepository;
 use App\Repository\ResultatOutilRepository;
+use App\Repository\UserFeedbackRepository;
 use App\Repository\UserRepository;
 use App\Service\AdminLogger;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -311,5 +314,233 @@ class AdminController extends AbstractController
     public function logs(AdminLogRepository $logRepo): Response
     {
         return $this->render('admin/logs.html.twig', ['logs' => $logRepo->findRecent(200)]);
+    }
+
+    // ── Utilisateurs jamais actifs ─────────────────────────────────────────
+
+    #[Route('/users/jamais-actifs', name: 'users_jamais_actifs')]
+    public function jamaisActifs(UserRepository $userRepo): Response
+    {
+        return $this->render('admin/jamais_actifs.html.twig', [
+            'users' => $userRepo->findJamaisActifs(),
+        ]);
+    }
+
+    // ── Logs d'erreurs applicatives ────────────────────────────────────────
+
+    #[Route('/logs-erreurs', name: 'logs_erreurs')]
+    public function logsErreurs(): Response
+    {
+        $logFile = $this->getParameter('kernel.logs_dir')
+            . DIRECTORY_SEPARATOR
+            . $this->getParameter('kernel.environment') . '.log';
+
+        $entries = [];
+        if (is_file($logFile) && is_readable($logFile)) {
+            $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+            // Read last 3000 lines to find up to 150 errors
+            $lines = array_slice($lines, -3000);
+            foreach (array_reverse($lines) as $line) {
+                // Format: [date] channel.LEVEL: message {context} []
+                if (!preg_match('/^\[(.+?)\] (\w+)\.(\w+): (.+?)(\s*\{.*)?$/', $line, $m)) {
+                    continue;
+                }
+                $level = strtoupper($m[3]);
+                if (!in_array($level, ['ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY', 'WARNING'], true)) {
+                    continue;
+                }
+                $entries[] = [
+                    'date'    => $m[1],
+                    'channel' => $m[2],
+                    'level'   => $level,
+                    'message' => $m[4],
+                    'context' => isset($m[5]) ? trim($m[5]) : '',
+                ];
+                if (count($entries) >= 150) {
+                    break;
+                }
+            }
+        }
+
+        return $this->render('admin/logs_erreurs.html.twig', [
+            'entries'  => $entries,
+            'logFile'  => basename($logFile),
+            'exists'   => is_file($logFile),
+        ]);
+    }
+
+    // ── Export complet JSON ────────────────────────────────────────────────
+
+    #[Route('/export-data', name: 'export_data')]
+    public function exportData(UserRepository $userRepo, ResultatOutilRepository $resultatRepo): StreamedResponse
+    {
+        $response = new StreamedResponse(function () use ($userRepo, $resultatRepo) {
+            $users = $userRepo->findAllOrderedByDate();
+            $data  = [];
+            foreach ($users as $u) {
+                $data[] = [
+                    'id'            => $u->getId(),
+                    'prenom'        => $u->getPrenom(),
+                    'nom'           => $u->getNom(),
+                    'email'         => $u->getEmail(),
+                    'etablissement' => $u->getEtablissement(),
+                    'roles'         => $u->getRoles(),
+                    'createdAt'     => $u->getCreatedAt()->format('Y-m-d H:i:s'),
+                    'classes'       => array_map(
+                        fn($c) => ['id' => $c->getId(), 'nom' => $c->getNom(), 'effectif' => $c->getEffectif()],
+                        $u->getClasses()->toArray()
+                    ),
+                ];
+            }
+            echo json_encode(['exportedAt' => date('Y-m-d H:i:s'), 'users' => $data], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        });
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="export_' . date('Y-m-d') . '.json"');
+
+        return $response;
+    }
+
+    // ── Métriques de conversion ────────────────────────────────────────────
+
+    #[Route('/conversion', name: 'conversion')]
+    public function conversion(UserRepository $userRepo): Response
+    {
+        return $this->render('admin/conversion.html.twig', [
+            'stats' => $userRepo->getConversionStats(),
+        ]);
+    }
+
+    // ── Stats détaillées par outil ─────────────────────────────────────────
+
+    #[Route('/outils', name: 'outils')]
+    public function outils(ResultatOutilRepository $resultatRepo): Response
+    {
+        return $this->render('admin/outils_stats.html.twig', [
+            'stats' => $resultatRepo->getOutilsDetailedStats(),
+        ]);
+    }
+
+    // ── Feedbacks utilisateurs ─────────────────────────────────────────────
+
+    #[Route('/feedbacks', name: 'feedbacks')]
+    public function feedbacks(UserFeedbackRepository $feedbackRepo, EntityManagerInterface $em): Response
+    {
+        $feedbacks = $feedbackRepo->findBy([], ['createdAt' => 'DESC']);
+
+        // Mark unread as read on visit
+        foreach ($feedbacks as $f) {
+            if (!$f->isLu()) {
+                $f->setLu(true);
+            }
+        }
+        $em->flush();
+
+        return $this->render('admin/feedbacks.html.twig', ['feedbacks' => $feedbacks]);
+    }
+
+    // ── Import CSV ─────────────────────────────────────────────────────────
+
+    #[Route('/import-csv', name: 'import_csv', methods: ['GET'])]
+    public function importCsv(): Response
+    {
+        return $this->render('admin/import_csv.html.twig');
+    }
+
+    #[Route('/import-csv', name: 'import_csv_post', methods: ['POST'])]
+    public function importCsvPost(
+        Request $request,
+        EntityManagerInterface $em,
+        UserRepository $userRepo,
+        UserPasswordHasherInterface $hasher,
+        AdminLogger $logger,
+    ): Response {
+        if (!$this->isCsrfTokenValid('import-csv', $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('admin_import_csv');
+        }
+
+        $file = $request->files->get('csv');
+
+        if (!$file) {
+            $this->addFlash('danger', 'Aucun fichier reçu.');
+            return $this->redirectToRoute('admin_import_csv');
+        }
+
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            $this->addFlash('danger', 'Fichier trop volumineux (max 2 Mo).');
+            return $this->redirectToRoute('admin_import_csv');
+        }
+
+        $allowedMimes = ['text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel'];
+        if (!in_array($file->getMimeType(), $allowedMimes, true)) {
+            $this->addFlash('danger', 'Format invalide. Attendu : fichier CSV.');
+            return $this->redirectToRoute('admin_import_csv');
+        }
+
+        $handle   = fopen($file->getPathname(), 'r');
+        fgetcsv($handle, 0, ';'); // skip header row
+
+        $imported = 0;
+        $skipped  = 0;
+        $errors   = [];
+        $row      = 1;
+
+        while (($cols = fgetcsv($handle, 0, ';')) !== false) {
+            $row++;
+            if (count($cols) < 3) {
+                $errors[] = "Ligne $row : données insuffisantes (prenom;nom;email[;etablissement]).";
+                continue;
+            }
+
+            [$prenom, $nom, $email] = array_map('trim', $cols);
+            $etablissement = isset($cols[3]) ? trim($cols[3]) : null;
+            $plainPassword = isset($cols[4]) && $cols[4] !== '' ? trim($cols[4]) : bin2hex(random_bytes(8));
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Ligne $row : email invalide « $email ».";
+                continue;
+            }
+            if ($prenom === '' || $nom === '') {
+                $errors[] = "Ligne $row : prénom ou nom manquant.";
+                continue;
+            }
+            if ($userRepo->findOneBy(['email' => $email])) {
+                $skipped++;
+                continue;
+            }
+
+            $user = new User();
+            $user->setPrenom(substr($prenom, 0, 100))
+                 ->setNom(substr($nom, 0, 100))
+                 ->setEmail($email)
+                 ->setEtablissement($etablissement ? substr($etablissement, 0, 200) : null)
+                 ->setPassword($hasher->hashPassword($user, $plainPassword));
+
+            $em->persist($user);
+            $imported++;
+        }
+        fclose($handle);
+        $em->flush();
+
+        $logger->log($this->getUser(), "Import CSV : $imported importé(s), $skipped ignoré(s)");
+        $this->addFlash('success', "$imported utilisateur(s) importé(s), $skipped ignoré(s) (email existant).");
+        if ($errors) {
+            foreach (array_slice($errors, 0, 10) as $err) {
+                $this->addFlash('warning', $err);
+            }
+        }
+
+        return $this->redirectToRoute('admin_import_csv');
+    }
+
+    // ── Détection de doublons ──────────────────────────────────────────────
+
+    #[Route('/doublons', name: 'doublons')]
+    public function doublons(UserRepository $userRepo): Response
+    {
+        return $this->render('admin/doublons.html.twig', [
+            'doublons' => $userRepo->findDoublons(),
+        ]);
     }
 }

@@ -1,0 +1,61 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Détection de doublons{% endblock %}
+
+{% block admin_body %}
+<div class="mb-3">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-copy text-warning me-2"></i>Doublons potentiels
+        {% if doublons is not empty %}
+            <span class="badge bg-warning text-dark ms-1">{{ doublons|length }}</span>
+        {% endif %}
+    </h4>
+</div>
+
+<div class="alert alert-info small py-2 mb-3">
+    <i class="bi bi-info-circle me-1"></i>
+    Utilisateurs partageant le même nom de famille <strong>au sein du même établissement</strong>.
+    Il peut s'agir de doublons ou simplement d'homonymes — à vérifier manuellement.
+</div>
+
+{% if doublons is empty %}
+    <div class="card border-0 shadow-sm p-4 text-center text-muted">
+        <i class="bi bi-check-circle fs-2 text-success mb-2"></i><br>
+        Aucun doublon potentiel détecté.
+    </div>
+{% else %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Établissement</th>
+                    <th>Nom de famille</th>
+                    <th class="text-center">Comptes</th>
+                    <th>Membres</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in doublons %}
+                <tr>
+                    <td class="small text-muted">{{ row.etablissement }}</td>
+                    <td class="fw-semibold small">{{ row.nom }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-warning text-dark">{{ row.nb }}</span>
+                    </td>
+                    <td class="small" style="max-width:380px;">
+                        <span class="text-break">{{ row.membres }}</span>
+                    </td>
+                    <td class="text-end pe-3">
+                        <a href="{{ path('admin_users', {q: row.nom}) }}" class="btn btn-sm btn-outline-secondary py-0" title="Rechercher ces utilisateurs">
+                            <i class="bi bi-search"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

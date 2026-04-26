@@ -1,0 +1,65 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block title %}Administration — Import CSV{% endblock %}
+
+{% block admin_body %}
+<div class="mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>Import CSV d'utilisateurs</h4>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4">
+            <h6 class="fw-semibold mb-3">Importer un fichier</h6>
+            <form method="post" enctype="multipart/form-data" action="{{ path('admin_import_csv_post') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('import-csv') }}">
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold" for="csv">Fichier CSV <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="csv" name="csv" accept=".csv,text/csv" required>
+                    <div class="form-text">Format CSV, séparateur <code>;</code>, encodage UTF-8. Max 2 Mo.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-upload me-1"></i>Importer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4">
+            <h6 class="fw-semibold mb-3"><i class="bi bi-info-circle me-1 text-primary"></i>Format attendu</h6>
+            <p class="small text-muted mb-2">La première ligne (en-tête) est ignorée. Colonnes dans l'ordre :</p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered small mb-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Colonne</th>
+                            <th>Obligatoire</th>
+                            <th>Remarque</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td><code>prenom</code></td><td class="text-center text-danger">Oui</td><td>Max 100 car.</td></tr>
+                        <tr><td>2</td><td><code>nom</code></td><td class="text-center text-danger">Oui</td><td>Max 100 car.</td></tr>
+                        <tr><td>3</td><td><code>email</code></td><td class="text-center text-danger">Oui</td><td>Doit être valide et unique</td></tr>
+                        <tr><td>4</td><td><code>etablissement</code></td><td class="text-center text-muted">Non</td><td>Max 200 car.</td></tr>
+                        <tr><td>5</td><td><code>mot_de_passe</code></td><td class="text-center text-muted">Non</td><td>Aléatoire si vide</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="small text-muted mb-1"><strong>Exemple :</strong></p>
+            <pre class="bg-light rounded p-2 mb-0 small" style="font-size:11px;">prenom;nom;email;etablissement;mot_de_passe
+Marie;Dupont;m.dupont@lycee.fr;Lycée Vauban;Azerty123!
+Jean;Martin;j.martin@college.fr;;
+</pre>
+            <div class="alert alert-warning small py-2 mt-3 mb-0">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Les utilisateurs dont l'email existe déjà sont silencieusement ignorés.
+                Les mots de passe en clair ne sont jamais stockés.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
