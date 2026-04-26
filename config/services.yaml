@@ -8,6 +8,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     app.contact_email: '%env(CONTACT_EMAIL)%'
+    router.request_context.host: '%env(APP_BASE_HOST)%'
+    router.request_context.scheme: '%env(APP_BASE_SCHEME)%'
 
 services:
     # default configuration for services in *this* file
